@@ -4,6 +4,13 @@
 
 ShotTracker Pro is a precision shooting logger application designed for tracking and analyzing shooting sessions. The application allows users to record detailed information about their shooting sessions, including rifle specifications, environmental conditions, shot scoring, and photos. It provides comprehensive filtering and analysis capabilities to help shooters track their progress and identify patterns in their performance.
 
+## Recent Changes (July 31, 2025)
+
+- **Fixed Data Saving Issues**: Resolved critical validation errors in session creation by fixing form default values, adding proper type conversion, and updating validation schemas to handle optional fields correctly
+- **Improved DOPE Card Interface**: Enhanced mobile responsiveness with better spacing, optimized table styling, and replaced "Add Range" button with "Save & Close" functionality
+- **Fixed Range Editing Bug**: Corrected DOPE card range editing to work for all distances (100-1200 yards) instead of defaulting to 100 yards only
+- **Enhanced Mobile Experience**: Improved touch-friendly controls, better button sizing, and optimized input field layouts for mobile devices
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
