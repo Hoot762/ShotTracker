@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit2, Trash2, Save, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -150,14 +150,12 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>{card.name}</span>
-            <div className="text-sm font-normal text-slate-500">
-              {card.rifle} • {card.calibre}
-            </div>
-          </DialogTitle>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-xl">{card.name}</DialogTitle>
+          <DialogDescription className="text-sm text-slate-500">
+            {card.rifle} • {card.calibre}
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
@@ -168,6 +166,7 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
               <Button 
                 onClick={() => handleEditRange()}
                 size="sm"
+                className="bg-primary hover:bg-primary/90"
               >
                 <Plus className="mr-2" size={16} />
                 Add Range
@@ -193,23 +192,26 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                     </TableRow>
                   ) : (
                     rangeData.map(({ range, data }) => (
-                      <TableRow key={range} className={data ? "" : "text-slate-400"}>
-                        <TableCell className="font-medium">{range}</TableCell>
+                      <TableRow key={range} className={`${data ? "bg-white" : "bg-slate-50"} hover:bg-slate-100`}>
+                        <TableCell className="font-semibold text-slate-700">{range} yds</TableCell>
                         <TableCell>
                           {editingRange && editingRange.range === range ? (
                             <Input
                               type="number"
                               step="0.25"
-                              placeholder="0.0"
+                              placeholder="Enter MOA"
                               value={editingRange.elevation || ""}
                               onChange={(e) => setEditingRange({
                                 ...editingRange,
                                 elevation: e.target.value ? Number(e.target.value) : null
                               })}
-                              className="w-20"
+                              className="w-24 h-8"
+                              autoFocus
                             />
                           ) : (
-                            data?.elevation?.toFixed(2) || "—"
+                            <span className={data ? "font-medium text-slate-900" : "text-slate-400"}>
+                              {data?.elevation !== null && data?.elevation !== undefined ? `${data.elevation.toFixed(2)} MOA` : "—"}
+                            </span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -217,16 +219,18 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             <Input
                               type="number"
                               step="0.25"
-                              placeholder="0.0"
+                              placeholder="Enter MOA"
                               value={editingRange.windage || ""}
                               onChange={(e) => setEditingRange({
                                 ...editingRange,
                                 windage: e.target.value ? Number(e.target.value) : null
                               })}
-                              className="w-20"
+                              className="w-24 h-8"
                             />
                           ) : (
-                            data?.windage?.toFixed(2) || "—"
+                            <span className={data ? "font-medium text-slate-900" : "text-slate-400"}>
+                              {data?.windage !== null && data?.windage !== undefined ? `${data.windage.toFixed(2)} MOA` : "—"}
+                            </span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -234,16 +238,17 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             <div className="flex space-x-1">
                               <Button 
                                 size="sm" 
-                                variant="ghost"
                                 onClick={handleSaveRange}
                                 disabled={createRangeMutation.isPending || updateRangeMutation.isPending}
+                                className="h-8 px-3 bg-green-600 hover:bg-green-700 text-white"
                               >
                                 <Save size={14} />
                               </Button>
                               <Button 
                                 size="sm" 
-                                variant="ghost"
+                                variant="outline"
                                 onClick={() => setEditingRange(null)}
+                                className="h-8 px-3"
                               >
                                 <X size={14} />
                               </Button>
@@ -252,17 +257,18 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             <div className="flex space-x-1">
                               <Button 
                                 size="sm" 
-                                variant="ghost"
+                                variant="outline"
                                 onClick={() => handleEditRange(data || undefined)}
+                                className="h-8 px-3 hover:bg-blue-50 hover:border-blue-300"
                               >
                                 <Edit2 size={14} />
                               </Button>
                               {data && (
                                 <Button 
                                   size="sm" 
-                                  variant="ghost"
+                                  variant="outline"
                                   onClick={() => handleDeleteRange(data.id)}
-                                  className="text-red-600 hover:text-red-700"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 h-8 px-3"
                                 >
                                   <Trash2 size={14} />
                                 </Button>

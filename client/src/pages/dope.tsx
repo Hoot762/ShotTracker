@@ -119,7 +119,7 @@ export default function DopePage() {
           />
 
           {/* DOPE Cards List */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {isLoading ? (
               <div className="col-span-full text-center py-12">
                 <div className="text-slate-500">Loading DOPE cards...</div>
@@ -127,10 +127,10 @@ export default function DopePage() {
             ) : dopeCards && dopeCards.length > 0 ? (
               dopeCards.map((card) => (
                 <Card key={card.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-2">
                     <CardTitle className="flex items-center justify-between">
-                      <span className="text-lg">{card.name}</span>
-                      <div className="flex space-x-2">
+                      <span className="text-base font-semibold truncate">{card.name}</span>
+                      <div className="flex space-x-1">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -138,8 +138,9 @@ export default function DopePage() {
                             e.stopPropagation();
                             setSelectedCard(card);
                           }}
+                          className="h-7 w-7 p-0"
                         >
-                          <Edit2 size={16} />
+                          <Edit2 size={14} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -148,29 +149,29 @@ export default function DopePage() {
                             e.stopPropagation();
                             handleDeleteCard(card.id);
                           }}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 h-7 w-7 p-0"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={14} />
                         </Button>
                       </div>
                     </CardTitle>
                   </CardHeader>
                   <CardContent 
-                    className="space-y-3"
+                    className="space-y-2 pt-0"
                     onClick={() => setSelectedCard(card)}
                   >
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-slate-500">Rifle</div>
-                        <div className="font-medium">{card.rifle}</div>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Rifle:</span>
+                        <span className="font-medium truncate ml-2">{card.rifle}</span>
                       </div>
-                      <div>
-                        <div className="text-slate-500">Calibre</div>
-                        <div className="font-medium">{card.calibre}</div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Calibre:</span>
+                        <span className="font-medium truncate ml-2">{card.calibre}</span>
                       </div>
                     </div>
-                    <div className="text-sm text-slate-500">
-                      Click to view range data
+                    <div className="text-xs text-slate-400 pt-1">
+                      Click to view ranges
                     </div>
                   </CardContent>
                 </Card>
