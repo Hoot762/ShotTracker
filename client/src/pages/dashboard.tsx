@@ -134,71 +134,73 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <SessionFilters onFiltersChange={setFilters} />
+        <div className="space-y-6">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Total Sessions</p>
+                    <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Target className="text-primary" size={24} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Average Score</p>
+                    <p className="text-2xl font-bold text-emerald-600">{stats.average.toFixed(1)}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="text-emerald-600" size={24} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Best Score</p>
+                    <p className="text-2xl font-bold text-violet-600">{stats.best.toFixed(1)}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                    <Trophy className="text-violet-600" size={24} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600">Total Sessions</p>
-                      <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Target className="text-primary" size={24} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600">Average Score</p>
-                      <p className="text-2xl font-bold text-emerald-600">{stats.average.toFixed(1)}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="text-emerald-600" size={24} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600">Best Score</p>
-                      <p className="text-2xl font-bold text-violet-600">{stats.best.toFixed(1)}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
-                      <Trophy className="text-violet-600" size={24} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Main Content */}
+            <div className="lg:col-span-3 space-y-6">
+              {/* New Session Form */}
+              <SessionForm 
+                isOpen={showNewSession} 
+                onToggle={() => setShowNewSession(!showNewSession)} 
+              />
+
+              {/* Sessions List */}
+              <SessionList 
+                sessions={sessions || []}
+                isLoading={isLoading}
+                onSessionSelect={setSelectedSession}
+              />
             </div>
 
-            {/* New Session Form */}
-            <SessionForm 
-              isOpen={showNewSession} 
-              onToggle={() => setShowNewSession(!showNewSession)} 
-            />
-
-            {/* Sessions List */}
-            <SessionList 
-              sessions={sessions || []}
-              isLoading={isLoading}
-              onSessionSelect={setSelectedSession}
-            />
+            {/* Filters Sidebar */}
+            <div className="lg:col-span-1">
+              <SessionFilters onFiltersChange={setFilters} />
+            </div>
           </div>
         </div>
       </div>
