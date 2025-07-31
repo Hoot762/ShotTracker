@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertSessionSchema, type InsertSession } from "@shared/schema";
@@ -31,10 +32,10 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
       date: new Date().toISOString().split('T')[0],
       rifle: "",
       calibre: "",
-      bulletWeight: 0,
-      distance: 0,
-      elevation: 0,
-      windage: 0,
+      bulletWeight: "" as any,
+      distance: "" as any,
+      elevation: "" as any,
+      windage: "" as any,
       shots: Array(12).fill(""),
       notes: "",
     },
@@ -154,7 +155,12 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                     <FormItem>
                       <FormLabel>Bullet Weight (gr) *</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="168" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                        <Input 
+                          type="number" 
+                          placeholder="168" 
+                          value={field.value === 0 ? "" : field.value || ""} 
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -170,9 +176,21 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Distance (yards) *</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="200" {...field} onChange={e => field.onChange(Number(e.target.value))} />
-                      </FormControl>
+                      <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select distance" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="300">300</SelectItem>
+                          <SelectItem value="600">600</SelectItem>
+                          <SelectItem value="800">800</SelectItem>
+                          <SelectItem value="900">900</SelectItem>
+                          <SelectItem value="1000">1000</SelectItem>
+                          <SelectItem value="1200">1200</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -184,7 +202,13 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                     <FormItem>
                       <FormLabel>Elevation (MOA)</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.25" placeholder="2.5" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          placeholder="2.5" 
+                          value={field.value === 0 ? "" : field.value || ""} 
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -197,7 +221,13 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                     <FormItem>
                       <FormLabel>Windage (MOA)</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.25" placeholder="0.75" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)} />
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          placeholder="0.75" 
+                          value={field.value === 0 ? "" : field.value || ""} 
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
