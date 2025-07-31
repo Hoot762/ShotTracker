@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, UserCog, Users } from "lucide-react";
+import { Plus, Trash2, UserCog, Users, ArrowLeft, Settings, LogOut } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,11 +24,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Admin() {
   const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -89,6 +99,10 @@ export default function Admin() {
     createUserMutation.mutate(data);
   };
 
+  const handleLogout = () => {
+    window.location.href = '/api/auth/logout';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -96,14 +110,45 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <UserCog className="text-white" size={20} />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Admin Panel</h1>
-                <p className="text-xs text-slate-500">User Management</p>
-              </div>
+              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                  <UserCog className="text-white" size={20} />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Admin Panel</h1>
+                  <p className="text-xs text-slate-500">User Management</p>
+                </div>
+              </Link>
             </div>
+            
+            <nav className="flex items-center space-x-4">
+              <Link 
+                href="/" 
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+              >
+                <ArrowLeft size={16} />
+                <span>Back to Dashboard</span>
+              </Link>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="px-2">
+                    <Settings size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2 py-1.5 text-sm font-medium">
+                    {user?.email}
+                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="mr-2" size={14} />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </nav>
           </div>
         </div>
       </header>
