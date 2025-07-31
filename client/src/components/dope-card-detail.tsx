@@ -116,15 +116,24 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
     }
   };
 
-  const handleEditRange = (range?: DopeRange) => {
-    if (range) {
+  const handleEditRange = (data?: DopeRange, rangeValue?: number) => {
+    if (data) {
+      // Editing existing range data
       setEditingRange({
-        id: range.id,
-        range: range.range,
-        elevation: range.elevation,
-        windage: range.windage,
+        id: data.id,
+        range: data.range,
+        elevation: data.elevation,
+        windage: data.windage,
+      });
+    } else if (rangeValue) {
+      // Creating new range data for specific range
+      setEditingRange({
+        range: rangeValue,
+        elevation: null,
+        windage: null,
       });
     } else {
+      // Default fallback
       setEditingRange({
         range: 100,
         elevation: null,
@@ -264,7 +273,7 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleEditRange(data || undefined)}
+                                onClick={() => handleEditRange(data || undefined, range)}
                                 className="h-8 px-3 hover:bg-blue-50 hover:border-blue-300 text-xs"
                               >
                                 <Edit2 size={12} className="mr-1" />
