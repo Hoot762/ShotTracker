@@ -99,8 +99,17 @@ export default function Admin() {
     createUserMutation.mutate(data);
   };
 
-  const handleLogout = () => {
-    window.location.href = '/api/auth/logout';
+  const handleLogout = async () => {
+    try {
+      await apiRequest('POST', '/api/auth/logout');
+      window.location.href = '/';
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to logout",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
