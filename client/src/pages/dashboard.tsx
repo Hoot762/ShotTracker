@@ -87,6 +87,7 @@ export default function Dashboard() {
                 <DropdownMenuContent align="end">
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user?.email}
+                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
                   {user?.isAdmin && (
                     <>
