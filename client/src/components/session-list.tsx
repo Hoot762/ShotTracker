@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Grid, List } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Session } from "@shared/schema";
@@ -11,11 +10,7 @@ interface SessionListProps {
   onSessionSelect: (session: Session) => void;
 }
 
-function getScoreBadge(score: number) {
-  if (score >= 50) return { text: "Excellent", variant: "default" as const, className: "bg-emerald-500/10 text-emerald-600" };
-  if (score >= 35) return { text: "Good", variant: "secondary" as const, className: "bg-yellow-500/10 text-yellow-600" };
-  return { text: "Average", variant: "outline" as const, className: "bg-slate-100 text-slate-600" };
-}
+
 
 export default function SessionList({ sessions, isLoading, onSessionSelect }: SessionListProps) {
   if (isLoading) {
@@ -66,7 +61,6 @@ export default function SessionList({ sessions, isLoading, onSessionSelect }: Se
         ) : (
           <div className="divide-y divide-slate-200">
             {sessions.map((session) => {
-              const scoreBadge = getScoreBadge(session.totalScore);
               return (
                 <div
                   key={session.id}
@@ -100,7 +94,7 @@ export default function SessionList({ sessions, isLoading, onSessionSelect }: Se
                       </div>
                     </div>
                     <div className="text-right ml-6">
-                      <div className={`text-2xl font-bold ${scoreBadge.text === 'Excellent' ? 'text-emerald-600' : scoreBadge.text === 'Good' ? 'text-yellow-600' : 'text-slate-600'}`}>
+                      <div className="text-2xl font-bold text-slate-900">
                         {session.totalScore}
                       </div>
                       <div className="text-sm text-slate-500">{session.vCount} V's</div>
