@@ -37,6 +37,20 @@ export default function Dashboard() {
 
   const { data: sessions, isLoading } = useQuery<Session[]>({
     queryKey: ['/api/sessions', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          params.append(key, value.toString());
+        }
+      });
+      const url = `/api/sessions${params.toString() ? '?' + params.toString() : ''}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${await res.text()}`);
+      }
+      return res.json();
+    },
     enabled: true,
   });
 
