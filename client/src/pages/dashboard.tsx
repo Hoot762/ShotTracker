@@ -103,6 +103,13 @@ export default function Dashboard() {
                     {user?.email}
                     {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dope" className="flex items-center">
+                      <Target className="mr-2" size={14} />
+                      DOPE Cards
+                    </Link>
+                  </DropdownMenuItem>
                   {user?.isAdmin && (
                     <>
                       <DropdownMenuSeparator />

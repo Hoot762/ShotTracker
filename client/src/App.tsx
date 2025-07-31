@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Admin from "@/pages/admin";
+import DopePage from "@/pages/dope";
 
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -30,6 +31,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/dope" component={DopePage} />
       <Route path="/admin">
         {user?.isAdmin ? <Admin /> : <NotFound />}
       </Route>

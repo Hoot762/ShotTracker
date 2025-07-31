@@ -3,7 +3,7 @@ import express from "express";
 import session from "express-session";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSessionSchema, insertUserSchema, loginSchema, type User } from "@shared/schema";
+import { insertSessionSchema, insertUserSchema, loginSchema, insertDopeCardSchema, insertDopeRangeSchema, type User } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -266,6 +266,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete session" });
+    }
+  });
+
+  // DOPE Card routes
+  app.get("/api/dope-cards", requireAuth, async (req, res) => {
+    try {
+      const dopeCards = await storage.getDopeCards(req.session.userId!);
+      res.json(dopeCards);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch DOPE cards" });
+    }
+  });
+
+  app.post("/api/dope-cards", requireAuth, async (req, res) => {
+    try {
+      const dopeCardData = insertDopeCardSchema.parse(req.body);
+      const dopeCard = await storage.createDopeCard(dopeCardData, req.session.userId!);
+      res.status(201).json(dopeCard);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: "Failed to create DOPE card" });
+      }
+    }
+  });
+
+  app.put("/api/dope-cards/:id", requireAuth, async (req, res) => {
+    try {
+      const dopeCardData = insertDopeCardSchema.partial().parse(req.body);
+      const dopeCard = await storage.updateDopeCard(req.params.id, dopeCardData, req.session.userId!);
+      if (!dopeCard) {
+        return res.status(404).json({ message: "DOPE card not found" });
+      }
+      res.json(dopeCard);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: "Failed to update DOPE card" });
+      }
+    }
+  });
+
+  app.delete("/api/dope-cards/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteDopeCard(req.params.id, req.session.userId!);
+      if (!deleted) {
+        return res.status(404).json({ message: "DOPE card not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete DOPE card" });
+    }
+  });
+
+  // DOPE Range routes
+  app.get("/api/dope-cards/:cardId/ranges", requireAuth, async (req, res) => {
+    try {
+      const ranges = await storage.getDopeRanges(req.params.cardId);
+      res.json(ranges);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch DOPE ranges" });
+    }
+  });
+
+  app.post("/api/dope-cards/:cardId/ranges", requireAuth, async (req, res) => {
+    try {
+      const rangeData = insertDopeRangeSchema.parse(req.body);
+      const range = await storage.createDopeRange(rangeData, req.params.cardId);
+      res.status(201).json(range);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: "Failed to create DOPE range" });
+      }
+    }
+  });
+
+  app.put("/api/dope-ranges/:id", requireAuth, async (req, res) => {
+    try {
+      const rangeData = insertDopeRangeSchema.partial().parse(req.body);
+      const range = await storage.updateDopeRange(req.params.id, rangeData);
+      if (!range) {
+        return res.status(404).json({ message: "DOPE range not found" });
+      }
+      res.json(range);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: "Failed to update DOPE range" });
+      }
+    }
+  });
+
+  app.delete("/api/dope-ranges/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteDopeRange(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "DOPE range not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete DOPE range" });
     }
   });
 

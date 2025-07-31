@@ -1,4 +1,17 @@
-import { type Session, type InsertSession, type User, type InsertUser, users, sessions } from "@shared/schema";
+import { 
+  type Session, 
+  type InsertSession, 
+  type User, 
+  type InsertUser,
+  type DopeCard,
+  type DopeRange,
+  type InsertDopeCard,
+  type InsertDopeRange,
+  users, 
+  sessions,
+  dopeCards,
+  dopeRanges
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, ilike, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -25,6 +38,19 @@ export interface IStorage {
     rifle?: string;
     distance?: number;
   }, userId: string): Promise<Session[]>;
+  
+  // DOPE Card methods
+  getDopeCards(userId: string): Promise<DopeCard[]>;
+  getDopeCard(id: string, userId: string): Promise<DopeCard | undefined>;
+  createDopeCard(dopeCard: InsertDopeCard, userId: string): Promise<DopeCard>;
+  updateDopeCard(id: string, dopeCard: Partial<InsertDopeCard>, userId: string): Promise<DopeCard | undefined>;
+  deleteDopeCard(id: string, userId: string): Promise<boolean>;
+  
+  // DOPE Range methods
+  getDopeRanges(dopeCardId: string): Promise<DopeRange[]>;
+  createDopeRange(dopeRange: InsertDopeRange, dopeCardId: string): Promise<DopeRange>;
+  updateDopeRange(id: string, dopeRange: Partial<InsertDopeRange>): Promise<DopeRange | undefined>;
+  deleteDopeRange(id: string): Promise<boolean>;
 }
 
 // Calculate score from shots array
@@ -182,6 +208,66 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(sessions)
       .where(and(...conditions))
       .orderBy(sql`${sessions.createdAt} DESC`);
+  }
+
+  // DOPE Card methods
+  async getDopeCards(userId: string): Promise<DopeCard[]> {
+    return await db.select().from(dopeCards).where(eq(dopeCards.userId, userId));
+  }
+
+  async getDopeCard(id: string, userId: string): Promise<DopeCard | undefined> {
+    const [card] = await db.select().from(dopeCards).where(
+      and(eq(dopeCards.id, id), eq(dopeCards.userId, userId))
+    );
+    return card;
+  }
+
+  async createDopeCard(dopeCard: InsertDopeCard, userId: string): Promise<DopeCard> {
+    const [card] = await db.insert(dopeCards).values({
+      ...dopeCard,
+      userId,
+    }).returning();
+    return card;
+  }
+
+  async updateDopeCard(id: string, dopeCard: Partial<InsertDopeCard>, userId: string): Promise<DopeCard | undefined> {
+    const [card] = await db.update(dopeCards)
+      .set(dopeCard)
+      .where(and(eq(dopeCards.id, id), eq(dopeCards.userId, userId)))
+      .returning();
+    return card;
+  }
+
+  async deleteDopeCard(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(dopeCards)
+      .where(and(eq(dopeCards.id, id), eq(dopeCards.userId, userId)));
+    return result.rowCount > 0;
+  }
+
+  // DOPE Range methods
+  async getDopeRanges(dopeCardId: string): Promise<DopeRange[]> {
+    return await db.select().from(dopeRanges).where(eq(dopeRanges.dopeCardId, dopeCardId));
+  }
+
+  async createDopeRange(dopeRange: InsertDopeRange, dopeCardId: string): Promise<DopeRange> {
+    const [range] = await db.insert(dopeRanges).values({
+      ...dopeRange,
+      dopeCardId,
+    }).returning();
+    return range;
+  }
+
+  async updateDopeRange(id: string, dopeRange: Partial<InsertDopeRange>): Promise<DopeRange | undefined> {
+    const [range] = await db.update(dopeRanges)
+      .set(dopeRange)
+      .where(eq(dopeRanges.id, id))
+      .returning();
+    return range;
+  }
+
+  async deleteDopeRange(id: string): Promise<boolean> {
+    const result = await db.delete(dopeRanges).where(eq(dopeRanges.id, id));
+    return result.rowCount > 0;
   }
 }
 

@@ -32,6 +32,26 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// DOPE Cards table
+export const dopeCards = pgTable("dope_cards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  rifle: text("rifle").notNull(),
+  calibre: text("calibre").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// DOPE Ranges table
+export const dopeRanges = pgTable("dope_ranges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dopeCardId: varchar("dope_card_id").notNull().references(() => dopeCards.id, { onDelete: "cascade" }),
+  range: integer("range").notNull(),
+  elevation: real("elevation"),
+  windage: real("windage"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // User schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -54,8 +74,25 @@ export const insertSessionSchema = createInsertSchema(sessions).omit({
   shots: z.array(z.union([z.string(), z.number()])).length(12),
 });
 
+// DOPE schemas
+export const insertDopeCardSchema = createInsertSchema(dopeCards).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+
+export const insertDopeRangeSchema = createInsertSchema(dopeRanges).omit({
+  id: true,
+  dopeCardId: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginUser = z.infer<typeof loginSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type Session = typeof sessions.$inferSelect;
+export type InsertDopeCard = z.infer<typeof insertDopeCardSchema>;
+export type DopeCard = typeof dopeCards.$inferSelect;
+export type InsertDopeRange = z.infer<typeof insertDopeRangeSchema>;
+export type DopeRange = typeof dopeRanges.$inferSelect;
