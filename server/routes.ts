@@ -193,10 +193,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Create new session
-  app.post("/api/sessions", requireAuth, upload.single('photo'), async (req, res) => {
+  app.post("/api/sessions", requireAuth, async (req, res) => {
+    // Conditionally apply multer based on content type
+    const isFormData = req.get('content-type')?.includes('multipart/form-data');
+    
+    if (isFormData) {
+      // Handle multipart form data with photo
+      upload.single('photo')(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({ message: "File upload error" });
+        }
+        await handleSessionCreation(req, res, true);
+      });
+    } else {
+      // Handle JSON data without photo
+      await handleSessionCreation(req, res, false);
+    }
+  });
+
+  async function handleSessionCreation(req: any, res: any, hasPhoto: boolean) {
     try {
-      const sessionData = JSON.parse(req.body.sessionData || '{}');
+      // Handle both form-data (with photo) and JSON requests
+      let sessionData;
+      if (hasPhoto && req.body.sessionData) {
+        // Form data request with photo
+        sessionData = JSON.parse(req.body.sessionData);
+      } else {
+        // Direct JSON request without photo
+        sessionData = req.body;
+      }
       
+
       // Validate session data
       const validatedData = insertSessionSchema.parse(sessionData);
       
@@ -214,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(session);
     } catch (error) {
       // Clean up uploaded file if validation fails
-      if (req.file) {
+      if (hasPhoto && req.file) {
         await fs.unlink(req.file.path).catch(() => {});
       }
       
@@ -224,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: "Failed to create session" });
       }
     }
-  });
+  }
   
   // Update session
   app.put("/api/sessions/:id", requireAuth, upload.single('photo'), async (req, res) => {
