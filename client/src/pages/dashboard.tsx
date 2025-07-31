@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Target, TrendingUp, Trophy, LogOut, Settings } from "lucide-react";
+import { Target, TrendingUp, Trophy, LogOut, Settings, Plus } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth, useLogout } from "@/hooks/useAuth";
 import SessionForm from "@/components/session-form";
@@ -75,32 +75,65 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Target className="text-white" size={20} />
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity min-w-0 flex-shrink">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                <Target className="text-white" size={18} />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">ShotTracker Pro</h1>
-                <p className="text-xs text-slate-500">Precision Shooting Logger</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">ShotTracker Pro</h1>
+                <p className="text-xs text-slate-500 hidden sm:block">Precision Shooting Logger</p>
               </div>
             </Link>
-            <nav className="flex items-center space-x-4">
-              <Button onClick={() => setShowNewSession(!showNewSession)}>
+            
+            <nav className="flex items-center space-x-1 sm:space-x-4">
+              {/* Mobile Menu - Hamburger with actions */}
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="px-2">
+                      <Plus size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowNewSession(!showNewSession)}>
+                      <Target className="mr-2" size={14} />
+                      New Session
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dope" className="flex items-center">
+                        <Target className="mr-2" size={14} />
+                        DOPE Cards
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Desktop Buttons */}
+              <Button 
+                onClick={() => setShowNewSession(!showNewSession)}
+                className="hidden sm:flex items-center"
+              >
                 <Target className="mr-2" size={16} />
                 New Session
               </Button>
-              <Button asChild variant="outline">
+              <Button 
+                asChild 
+                variant="outline"
+                className="hidden sm:flex items-center"
+              >
                 <Link href="/dope">
                   <Target className="mr-2" size={16} />
                   DOPE Cards
                 </Link>
               </Button>
               
+              {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="px-2">
                     <Settings size={16} />
                   </Button>
                 </DropdownMenuTrigger>
@@ -133,8 +166,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -180,9 +213,9 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
             {/* Main Content */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="lg:col-span-3 space-y-4 lg:space-y-6">
               {/* New Session Form */}
               <SessionForm 
                 isOpen={showNewSession} 

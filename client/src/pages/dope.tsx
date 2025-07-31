@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Target, Edit2, Trash2, Settings } from "lucide-react";
+import { Plus, Target, Edit2, Trash2, Settings, LogOut, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -67,51 +74,71 @@ export default function DopePage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Target className="text-white" size={20} />
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity min-w-0 flex-shrink">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                <Target className="text-white" size={18} />
               </div>
-              <h1 className="text-2xl font-bold text-slate-900">DOPE Cards</h1>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">DOPE Cards</h1>
+                <p className="text-xs text-slate-500 hidden sm:block">Data on Previous Engagements</p>
+              </div>
             </Link>
             
-            <div className="flex items-center space-x-4">
-              <div className="relative group">
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <Settings size={16} />
-                </Button>
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="p-4">
-                    <div className="text-sm text-slate-600 mb-1">Logged in as:</div>
-                    <div className="font-medium text-slate-900">{user?.email}</div>
-                    {user?.isAdmin && (
-                      <div className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full mt-2">
-                        Admin
-                      </div>
-                    )}
+            <div className="flex items-center space-x-1 sm:space-x-4">
+              <Button 
+                asChild 
+                variant="outline" 
+                size="sm"
+                className="px-2 sm:px-4"
+              >
+                <Link href="/" className="flex items-center">
+                  <ArrowLeft className="mr-1 sm:mr-2" size={16} />
+                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="sm:hidden">Back</span>
+                </Link>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="px-2">
+                    <Settings size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2 py-1.5 text-sm font-medium">
+                    {user?.email}
+                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
-                  <div className="border-t border-slate-200">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => logoutMutation.mutate()}
-                    >
-                      Logout
-                    </Button>
-                  </div>
-                </div>
-              </div>
+
+                  {user?.isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center">
+                          <Settings className="mr-2" size={14} />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => logoutMutation.mutate()} className="text-red-600">
+                    <LogOut className="mr-2" size={14} />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="space-y-4 sm:space-y-6">
           {/* New DOPE Card Form */}
           <DopeCardForm
             isOpen={showNewCard}
