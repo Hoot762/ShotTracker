@@ -72,6 +72,9 @@ export const insertSessionSchema = createInsertSchema(sessions).omit({
   createdAt: true,
 }).extend({
   shots: z.array(z.union([z.string(), z.number()])).length(12),
+  elevation: z.number().nullable().optional(),
+  windage: z.number().nullable().optional(),
+  notes: z.string().nullable().optional(),
 });
 
 // DOPE schemas

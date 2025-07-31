@@ -224,8 +224,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
 
+      // Add detailed logging for debugging
+      console.log('Raw session data:', JSON.stringify(sessionData, null, 2));
+      
       // Validate session data
-      const validatedData = insertSessionSchema.parse(sessionData);
+      try {
+        const validatedData = insertSessionSchema.parse(sessionData);
       
       // Handle photo upload
       let photoUrl = null;
@@ -238,7 +242,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         photoUrl,
       }, req.session.userId!);
       
-      res.status(201).json(session);
+        res.status(201).json(session);
+      } catch (validationError) {
+        console.error('Validation error:', validationError);
+        throw validationError;
+      }
     } catch (error) {
       // Clean up uploaded file if validation fails
       if (hasPhoto && req.file) {

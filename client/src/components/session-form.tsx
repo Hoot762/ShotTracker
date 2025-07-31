@@ -32,10 +32,10 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
       date: new Date().toISOString().split('T')[0],
       rifle: "",
       calibre: "",
-      bulletWeight: "" as any,
-      distance: "" as any,
-      elevation: "" as any,
-      windage: "" as any,
+      bulletWeight: 0,
+      distance: 100,
+      elevation: undefined,
+      windage: undefined,
       shots: Array(12).fill(""),
       notes: "",
     },
@@ -43,13 +43,23 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
 
   const createSessionMutation = useMutation({
     mutationFn: async (data: InsertSession) => {
-      const formData = new FormData();
-      formData.append('sessionData', JSON.stringify(data));
+      // Transform the data to ensure proper types
+      const transformedData = {
+        ...data,
+        bulletWeight: Number(data.bulletWeight) || 0,
+        distance: Number(data.distance) || 100,
+        elevation: data.elevation ? Number(data.elevation) : null,
+        windage: data.windage ? Number(data.windage) : null,
+      };
+
       if (photoFile) {
+        const formData = new FormData();
+        formData.append('sessionData', JSON.stringify(transformedData));
         formData.append('photo', photoFile);
+        return apiRequest('POST', '/api/sessions', formData);
+      } else {
+        return apiRequest('POST', '/api/sessions', transformedData);
       }
-      
-      return apiRequest('POST', '/api/sessions', formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
