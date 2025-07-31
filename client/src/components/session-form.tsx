@@ -183,8 +183,13 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="200">200</SelectItem>
                           <SelectItem value="300">300</SelectItem>
+                          <SelectItem value="400">400</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
                           <SelectItem value="600">600</SelectItem>
+                          <SelectItem value="700">700</SelectItem>
                           <SelectItem value="800">800</SelectItem>
                           <SelectItem value="900">900</SelectItem>
                           <SelectItem value="1000">1000</SelectItem>
