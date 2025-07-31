@@ -1,20 +1,30 @@
-import { type Session, type InsertSession } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type Session, type InsertSession, type User, type InsertUser, users, sessions } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, gte, lte, ilike, sql } from "drizzle-orm";
+import bcrypt from "bcrypt";
 
 export interface IStorage {
+  // User methods
+  getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  deleteUser(id: string): Promise<boolean>;
+  verifyPassword(user: User, password: string): Promise<boolean>;
+  
   // Session methods
-  getSessions(): Promise<Session[]>;
-  getSession(id: string): Promise<Session | undefined>;
-  createSession(session: InsertSession): Promise<Session>;
-  updateSession(id: string, session: Partial<InsertSession>): Promise<Session | undefined>;
-  deleteSession(id: string): Promise<boolean>;
+  getSessions(userId: string): Promise<Session[]>;
+  getSession(id: string, userId: string): Promise<Session | undefined>;
+  createSession(session: InsertSession, userId: string): Promise<Session>;
+  updateSession(id: string, session: Partial<InsertSession>, userId: string): Promise<Session | undefined>;
+  deleteSession(id: string, userId: string): Promise<boolean>;
   getFilteredSessions(filters: {
     name?: string;
     dateFrom?: string;
     dateTo?: string;
     rifle?: string;
     distance?: number;
-  }): Promise<Session[]>;
+  }, userId: string): Promise<Session[]>;
 }
 
 // Calculate score from shots array
@@ -36,50 +46,78 @@ function calculateScore(shots: (string | number)[]): { totalScore: number; vCoun
   return { totalScore, vCount };
 }
 
-export class MemStorage implements IStorage {
-  private sessions: Map<string, Session>;
-
-  constructor() {
-    this.sessions = new Map();
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
-  async getSessions(): Promise<Session[]> {
-    return Array.from(this.sessions.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
-  async getSession(id: string): Promise<Session | undefined> {
-    return this.sessions.get(id);
+  async createUser(userData: InsertUser): Promise<User> {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        password: hashedPassword,
+      })
+      .returning();
+    return user;
   }
 
-  async createSession(insertSession: InsertSession): Promise<Session> {
-    const id = randomUUID();
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount > 0;
+  }
+
+  async verifyPassword(user: User, password: string): Promise<boolean> {
+    return await bcrypt.compare(password, user.password);
+  }
+
+  // Session methods
+  async getSessions(userId: string): Promise<Session[]> {
+    return await db.select().from(sessions).where(eq(sessions.userId, userId))
+      .orderBy(sql`${sessions.createdAt} DESC`);
+  }
+
+  async getSession(id: string, userId: string): Promise<Session | undefined> {
+    const [session] = await db.select().from(sessions)
+      .where(and(eq(sessions.id, id), eq(sessions.userId, userId)));
+    return session || undefined;
+  }
+
+  async createSession(insertSession: InsertSession, userId: string): Promise<Session> {
     const { totalScore, vCount } = calculateScore(insertSession.shots);
     
-    const session: Session = {
-      ...insertSession,
-      id,
-      totalScore,
-      vCount,
-      elevation: insertSession.elevation ?? null,
-      windage: insertSession.windage ?? null,
-      photoUrl: insertSession.photoUrl ?? null,
-      notes: insertSession.notes ?? null,
-      shots: insertSession.shots.map(shot => shot.toString()),
-      createdAt: new Date(),
-    };
-    
-    this.sessions.set(id, session);
+    const [session] = await db
+      .insert(sessions)
+      .values({
+        ...insertSession,
+        userId,
+        totalScore,
+        vCount,
+        elevation: insertSession.elevation ?? null,
+        windage: insertSession.windage ?? null,
+        photoUrl: insertSession.photoUrl ?? null,
+        notes: insertSession.notes ?? null,
+        shots: insertSession.shots.map(shot => shot.toString()),
+      })
+      .returning();
     return session;
   }
 
-  async updateSession(id: string, updateData: Partial<InsertSession>): Promise<Session | undefined> {
-    const existingSession = this.sessions.get(id);
-    if (!existingSession) return undefined;
-    
-    let totalScore = existingSession.totalScore;
-    let vCount = existingSession.vCount;
+  async updateSession(id: string, updateData: Partial<InsertSession>, userId: string): Promise<Session | undefined> {
+    let totalScore: number | undefined;
+    let vCount: number | undefined;
     
     if (updateData.shots) {
       const calculated = calculateScore(updateData.shots);
@@ -87,24 +125,27 @@ export class MemStorage implements IStorage {
       vCount = calculated.vCount;
     }
     
-    const updatedSession: Session = {
-      ...existingSession,
-      ...updateData,
-      totalScore,
-      vCount,
-      elevation: updateData.elevation ?? existingSession.elevation,
-      windage: updateData.windage ?? existingSession.windage,
-      photoUrl: updateData.photoUrl ?? existingSession.photoUrl,
-      notes: updateData.notes ?? existingSession.notes,
-      shots: updateData.shots ? updateData.shots.map(shot => shot.toString()) : existingSession.shots,
-    };
-    
-    this.sessions.set(id, updatedSession);
-    return updatedSession;
+    const [session] = await db
+      .update(sessions)
+      .set({
+        ...updateData,
+        ...(totalScore !== undefined && { totalScore }),
+        ...(vCount !== undefined && { vCount }),
+        elevation: updateData.elevation ?? undefined,
+        windage: updateData.windage ?? undefined,
+        photoUrl: updateData.photoUrl ?? undefined,
+        notes: updateData.notes ?? undefined,
+        shots: updateData.shots ? updateData.shots.map(shot => shot.toString()) : undefined,
+      })
+      .where(and(eq(sessions.id, id), eq(sessions.userId, userId)))
+      .returning();
+    return session || undefined;
   }
 
-  async deleteSession(id: string): Promise<boolean> {
-    return this.sessions.delete(id);
+  async deleteSession(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(sessions)
+      .where(and(eq(sessions.id, id), eq(sessions.userId, userId)));
+    return result.rowCount > 0;
   }
 
   async getFilteredSessions(filters: {
@@ -113,38 +154,35 @@ export class MemStorage implements IStorage {
     dateTo?: string;
     rifle?: string;
     distance?: number;
-  }): Promise<Session[]> {
-    let sessions = Array.from(this.sessions.values());
+  }, userId: string): Promise<Session[]> {
+    let query = db.select().from(sessions).where(eq(sessions.userId, userId));
+    
+    const conditions = [eq(sessions.userId, userId)];
     
     if (filters.name) {
-      const searchTerm = filters.name.toLowerCase();
-      sessions = sessions.filter(session => 
-        session.name.toLowerCase().includes(searchTerm)
-      );
+      conditions.push(ilike(sessions.name, `%${filters.name}%`));
     }
     
     if (filters.dateFrom) {
-      sessions = sessions.filter(session => session.date >= filters.dateFrom!);
+      conditions.push(gte(sessions.date, filters.dateFrom));
     }
     
     if (filters.dateTo) {
-      sessions = sessions.filter(session => session.date <= filters.dateTo!);
+      conditions.push(lte(sessions.date, filters.dateTo));
     }
     
     if (filters.rifle) {
-      sessions = sessions.filter(session => 
-        session.rifle.toLowerCase().includes(filters.rifle!.toLowerCase())
-      );
+      conditions.push(ilike(sessions.rifle, `%${filters.rifle}%`));
     }
     
     if (filters.distance) {
-      sessions = sessions.filter(session => session.distance === filters.distance);
+      conditions.push(eq(sessions.distance, filters.distance));
     }
     
-    return sessions.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return await db.select().from(sessions)
+      .where(and(...conditions))
+      .orderBy(sql`${sessions.createdAt} DESC`);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

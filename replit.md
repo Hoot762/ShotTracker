@@ -22,23 +22,31 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules for modern JavaScript features
-- **API Design**: RESTful API with JSON responses
+- **API Design**: RESTful API with JSON responses and authentication middleware
+- **Authentication**: Session-based authentication with bcrypt password hashing
+- **Authorization**: Route-level middleware for user authentication and admin access control
 - **File Uploads**: Multer middleware for handling image uploads with size and type validation
-- **Data Storage**: In-memory storage implementation with interface for future database integration
-- **Session Management**: Express sessions with PostgreSQL session store configuration
+- **Data Storage**: PostgreSQL database with Drizzle ORM for type-safe operations
+- **Session Management**: Express sessions with secure cookie configuration
 
 ### Database Design
 - **ORM**: Drizzle ORM with PostgreSQL dialect for type-safe database operations
-- **Schema**: Single `sessions` table with comprehensive shooting session data
-- **Fields**: Includes session metadata, rifle specifications, environmental conditions, shot arrays, calculated scores, and optional photo URLs
+- **Authentication**: User accounts with email/password authentication and bcrypt hashing
+- **Schema**: Multi-table design with `users` and `sessions` tables with proper foreign key relationships
+- **User Isolation**: All shooting sessions are isolated per user with proper access controls
+- **Admin System**: Role-based permissions with admin flag for user management
+- **Fields**: Users (email, password hash, admin flag) and Sessions (all shooting data with user reference)
 - **Validation**: Drizzle-Zod integration for runtime schema validation
 
 ### Key Features
-- **Session Management**: Create, read, update, and delete shooting sessions
+- **User Authentication**: Multi-user support with email/password login and admin roles
+- **User Management**: Admin panel for creating users and managing accounts
+- **Session Management**: Create, read, update, and delete shooting sessions (isolated per user)
 - **Shot Scoring**: 12-shot arrays with support for numeric scores and 'V' (bull's-eye) notation
 - **Photo Upload**: Image attachment with file type and size validation
 - **Filtering System**: Multi-criteria filtering by name, date range, rifle, and distance
 - **Score Calculation**: Automatic total score and V-count calculation
+- **Role-Based Access**: Admin users can access user management features
 - **Responsive Design**: Mobile-first approach with adaptive layouts
 
 ### Development Workflow

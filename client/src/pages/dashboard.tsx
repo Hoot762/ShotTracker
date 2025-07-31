@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Target, TrendingUp, Trophy } from "lucide-react";
+import { Target, TrendingUp, Trophy, LogOut, Settings } from "lucide-react";
+import { Link } from "wouter";
+import { useAuth, useLogout } from "@/hooks/useAuth";
 import SessionForm from "@/components/session-form";
 import SessionList from "@/components/session-list";
 import SessionFilters from "@/components/session-filters";
 import SessionDetailModal from "@/components/session-detail-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 import type { Session } from "@shared/schema";
 
 interface FilterState {
@@ -21,11 +31,25 @@ export default function Dashboard() {
   const [showNewSession, setShowNewSession] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [filters, setFilters] = useState<FilterState>({});
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const logoutMutation = useLogout();
 
   const { data: sessions, isLoading } = useQuery<Session[]>({
     queryKey: ['/api/sessions', filters],
     enabled: true,
   });
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out",
+        });
+      },
+    });
+  };
 
   const stats = sessions ? {
     total: sessions.length,
@@ -48,11 +72,40 @@ export default function Dashboard() {
                 <p className="text-xs text-slate-500">Precision Shooting Logger</p>
               </div>
             </div>
-            <nav className="hidden md:flex items-center space-x-6">
+            <nav className="flex items-center space-x-4">
               <Button onClick={() => setShowNewSession(!showNewSession)}>
                 <Target className="mr-2" size={16} />
                 New Session
               </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Settings size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2 py-1.5 text-sm font-medium">
+                    {user?.email}
+                  </div>
+                  {user?.isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center">
+                          <Settings className="mr-2" size={14} />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="mr-2" size={14} />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
           </div>
         </div>
