@@ -77,7 +77,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <Target className="text-white" size={20} />
               </div>
@@ -85,11 +85,17 @@ export default function Dashboard() {
                 <h1 className="text-xl font-bold text-slate-900">ShotTracker Pro</h1>
                 <p className="text-xs text-slate-500">Precision Shooting Logger</p>
               </div>
-            </div>
+            </Link>
             <nav className="flex items-center space-x-4">
               <Button onClick={() => setShowNewSession(!showNewSession)}>
                 <Target className="mr-2" size={16} />
                 New Session
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/dope">
+                  <Target className="mr-2" size={16} />
+                  DOPE Cards
+                </Link>
               </Button>
               
               <DropdownMenu>
@@ -103,13 +109,7 @@ export default function Dashboard() {
                     {user?.email}
                     {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dope" className="flex items-center">
-                      <Target className="mr-2" size={14} />
-                      DOPE Cards
-                    </Link>
-                  </DropdownMenuItem>
+
                   {user?.isAdmin && (
                     <>
                       <DropdownMenuSeparator />

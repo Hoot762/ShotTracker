@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, RotateCcw, Search } from "lucide-react";
+import { Filter, RotateCcw, Search, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ interface SessionFiltersProps {
 
 export default function SessionFilters({ onFiltersChange }: SessionFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({});
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const updateFilter = (key: keyof FilterState, value: string | number | undefined) => {
     const newFilters = { ...filters, [key]: value };
@@ -37,11 +38,21 @@ export default function SessionFilters({ onFiltersChange }: SessionFiltersProps)
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-          <Filter className="mr-2 text-primary" size={20} />
-          Filters
-        </h3>
+      <div className="p-6 border-b border-slate-200">
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-between text-left"
+        >
+          <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+            <Filter className="mr-2 text-primary" size={20} />
+            Filters
+          </h3>
+          <ChevronDown className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} size={20} />
+        </button>
+      </div>
+      
+      {isExpanded && (
+        <CardContent className="p-6 bg-slate-50">
         
         {/* Search */}
         <div className="mb-4">
@@ -107,7 +118,8 @@ export default function SessionFilters({ onFiltersChange }: SessionFiltersProps)
           <RotateCcw className="mr-2" size={16} />
           Clear Filters
         </Button>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
