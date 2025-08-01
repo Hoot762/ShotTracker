@@ -24,6 +24,8 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   deleteUser(id: string): Promise<boolean>;
   verifyPassword(user: User, password: string): Promise<boolean>;
+  createSuperAdmin(email: string, password: string): Promise<User>;
+  ensureSuperAdminExists(): Promise<void>;
   
   // Session methods
   getSessions(userId: string): Promise<Session[]>;
@@ -107,6 +109,49 @@ export class DatabaseStorage implements IStorage {
 
   async verifyPassword(user: User, password: string): Promise<boolean> {
     return await bcrypt.compare(password, user.password);
+  }
+
+  async createSuperAdmin(email: string, password: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Check if user already exists
+    const existingUser = await this.getUserByEmail(email);
+    if (existingUser) {
+      // Update existing user to be admin with new password
+      const [user] = await db
+        .update(users)
+        .set({
+          password: hashedPassword,
+          isAdmin: true
+        })
+        .where(eq(users.email, email))
+        .returning();
+      return user;
+    }
+    
+    // Create new super admin user
+    const [user] = await db
+      .insert(users)
+      .values({
+        email,
+        password: hashedPassword,
+        isAdmin: true,
+      })
+      .returning();
+    return user;
+  }
+
+  async ensureSuperAdminExists(): Promise<void> {
+    // Default super admin credentials for production deployment
+    const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || "superadmin@shottracker.com";
+    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || "SuperAdmin2025!";
+    
+    try {
+      await this.createSuperAdmin(SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD);
+      console.log(`Super admin ensured: ${SUPER_ADMIN_EMAIL}`);
+    } catch (error) {
+      console.error("Failed to ensure super admin exists:", error);
+    }
   }
 
   // Session methods

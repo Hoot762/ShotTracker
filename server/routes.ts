@@ -158,6 +158,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete user" });
     }
   });
+
+  // Super Admin routes
+  app.post("/api/admin/super-admin", requireAdmin, async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+      
+      const user = await storage.createSuperAdmin(email, password);
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(201).json({ 
+        message: "Super admin created/updated successfully",
+        user: userWithoutPassword
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: "Failed to create super admin" });
+      }
+    }
+  });
   
   // Get all sessions with optional filtering
   app.get("/api/sessions", requireAuth, async (req, res) => {

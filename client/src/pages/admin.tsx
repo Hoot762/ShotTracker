@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, UserCog, Users, ArrowLeft, Settings, LogOut } from "lucide-react";
+import { Plus, Trash2, UserCog, Users, ArrowLeft, Settings, LogOut, Shield } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +37,9 @@ import {
 
 export default function Admin() {
   const [showForm, setShowForm] = useState(false);
+  const [showSuperAdminForm, setShowSuperAdminForm] = useState(false);
+  const [superAdminEmail, setSuperAdminEmail] = useState("");
+  const [superAdminPassword, setSuperAdminPassword] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -95,8 +99,52 @@ export default function Admin() {
     },
   });
 
+  const createSuperAdminMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string }) => {
+      return apiRequest('POST', '/api/admin/super-admin', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Success",
+        description: "Super admin created/updated successfully. These credentials will be used for production deployment.",
+      });
+      setSuperAdminEmail("");
+      setSuperAdminPassword("");
+      setShowSuperAdminForm(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create super admin",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: InsertUser) => {
     createUserMutation.mutate(data);
+  };
+
+  const handleSuperAdminSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!superAdminEmail || !superAdminPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (superAdminPassword.length < 8) {
+      toast({
+        title: "Error", 
+        description: "Password must be at least 8 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+    createSuperAdminMutation.mutate({ email: superAdminEmail, password: superAdminPassword });
   };
 
   const handleLogout = async () => {
@@ -243,6 +291,91 @@ export default function Admin() {
                     </div>
                   </form>
                 </Form>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Super Admin Section */}
+          <Card className="border-orange-200 bg-orange-50/30">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center text-orange-800">
+                    <Shield className="mr-2 text-orange-600" size={20} />
+                    Production Super Admin
+                  </CardTitle>
+                  <CardDescription className="text-orange-700">
+                    Set up super admin credentials for production deployment. These will be used when the app is deployed.
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => setShowSuperAdminForm(!showSuperAdminForm)}
+                  variant="outline"
+                  className="border-orange-300 text-orange-800 hover:bg-orange-100"
+                >
+                  {showSuperAdminForm ? "Cancel" : "Set Credentials"}
+                </Button>
+              </div>
+            </CardHeader>
+            {showSuperAdminForm && (
+              <CardContent>
+                <form onSubmit={handleSuperAdminSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="superAdminEmail">Super Admin Email *</Label>
+                      <Input
+                        id="superAdminEmail"
+                        type="email"
+                        placeholder="superadmin@yourcompany.com"
+                        value={superAdminEmail}
+                        onChange={(e) => setSuperAdminEmail(e.target.value)}
+                        className="border-orange-200 focus:border-orange-400"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="superAdminPassword">Super Admin Password *</Label>
+                      <Input
+                        id="superAdminPassword"
+                        type="password"
+                        placeholder="Strong password (8+ characters)"
+                        value={superAdminPassword}
+                        onChange={(e) => setSuperAdminPassword(e.target.value)}
+                        className="border-orange-200 focus:border-orange-400"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-orange-100 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-start space-x-2">
+                      <Shield className="text-orange-600 mt-0.5" size={16} />
+                      <div className="text-sm text-orange-800">
+                        <p className="font-medium mb-1">Important:</p>
+                        <ul className="list-disc list-inside space-y-1 text-orange-700">
+                          <li>These credentials will be used for production database access</li>
+                          <li>The super admin can manage all users and access all data</li>
+                          <li>Use a strong, unique password for security</li>
+                          <li>Store these credentials securely after deployment</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-3">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setShowSuperAdminForm(false)}
+                      className="border-orange-300 text-orange-800 hover:bg-orange-100"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createSuperAdminMutation.isPending}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      {createSuperAdminMutation.isPending ? "Setting..." : "Set Super Admin"}
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             )}
           </Card>
