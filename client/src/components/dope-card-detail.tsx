@@ -185,9 +185,10 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
               </Button>
             </div>
             
-            <div className="border rounded-lg overflow-hidden bg-white">
+            {/* Desktop Table Layout */}
+            <div className="hidden sm:block border rounded-lg overflow-hidden bg-white">
               <div className="overflow-x-auto">
-                <Table className="min-w-[700px] sm:min-w-full">
+                <Table className="min-w-full">
                   <TableHeader>
                     <TableRow className="bg-slate-50">
                       <TableHead className="w-24 sm:w-32 font-semibold text-slate-700">Range</TableHead>
@@ -299,6 +300,119 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                   </TableBody>
                 </Table>
               </div>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="sm:hidden space-y-3">
+              {isLoading ? (
+                <div className="text-center py-8 text-slate-500">
+                  Loading range data...
+                </div>
+              ) : (
+                rangeData.map(({ range, data }) => (
+                  <div key={range} className={`border rounded-lg p-4 ${data ? "bg-white" : "bg-slate-50/50"}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-slate-800 text-lg">{range} yards</h4>
+                      <div className="flex space-x-2">
+                        {editingRange && editingRange.range === range ? (
+                          <>
+                            <Button
+                              onClick={handleSaveRange}
+                              size="sm"
+                              disabled={createRangeMutation.isPending || updateRangeMutation.isPending}
+                              className="px-3 py-1 h-8 bg-green-600 hover:bg-green-700 text-white text-xs"
+                            >
+                              <Save size={12} className="mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              onClick={() => setEditingRange(null)}
+                              variant="outline"
+                              size="sm"
+                              className="px-3 py-1 h-8 text-xs"
+                            >
+                              <X size={12} className="mr-1" />
+                              Cancel
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={() => handleEditRange(data || undefined, range)}
+                              variant="outline"
+                              size="sm"
+                              className="px-3 py-1 h-8 hover:bg-blue-50 hover:border-blue-300 text-xs"
+                            >
+                              <Edit2 size={12} className="mr-1" />
+                              Edit
+                            </Button>
+                            {data && (
+                              <Button
+                                onClick={() => handleDeleteRange(data.id)}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 px-3 py-1 h-8 text-xs"
+                              >
+                                <Trash2 size={12} className="mr-1" />
+                                Delete
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-slate-600 block mb-1">
+                          Elevation (MOA)
+                        </label>
+                        {editingRange && editingRange.range === range ? (
+                          <Input
+                            type="number"
+                            step="0.25"
+                            placeholder="Enter MOA"
+                            value={editingRange.elevation || ""}
+                            onChange={(e) => setEditingRange({
+                              ...editingRange,
+                              elevation: e.target.value ? Number(e.target.value) : null
+                            })}
+                            className="w-full h-10"
+                            autoFocus
+                          />
+                        ) : (
+                          <div className={`text-lg font-medium ${data ? "text-slate-800" : "text-slate-400"} bg-slate-50 rounded px-3 py-2`}>
+                            {data?.elevation !== null && data?.elevation !== undefined ? `${data.elevation.toFixed(2)} MOA` : "—"}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium text-slate-600 block mb-1">
+                          Windage (MOA)
+                        </label>
+                        {editingRange && editingRange.range === range ? (
+                          <Input
+                            type="number"
+                            step="0.25"
+                            placeholder="Enter MOA"
+                            value={editingRange.windage || ""}
+                            onChange={(e) => setEditingRange({
+                              ...editingRange,
+                              windage: e.target.value ? Number(e.target.value) : null
+                            })}
+                            className="w-full h-10"
+                          />
+                        ) : (
+                          <div className={`text-lg font-medium ${data ? "text-slate-800" : "text-slate-400"} bg-slate-50 rounded px-3 py-2`}>
+                            {data?.windage !== null && data?.windage !== undefined ? `${data.windage.toFixed(2)} MOA` : "—"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
