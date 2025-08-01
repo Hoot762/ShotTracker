@@ -116,7 +116,10 @@ export default function Dashboard() {
 
               {/* Desktop Buttons */}
               <Button 
-                onClick={() => setShowNewSession(!showNewSession)}
+                onClick={() => {
+                  setEditSession(null);
+                  setShowNewSession(!showNewSession);
+                }}
                 className="hidden sm:flex items-center"
               >
                 <Target className="mr-2" size={16} />

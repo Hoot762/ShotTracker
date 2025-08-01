@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,18 +30,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
 
   const form = useForm<InsertSession>({
     resolver: zodResolver(insertSessionSchema),
-    defaultValues: editSession ? {
-      name: editSession.name,
-      date: editSession.date,
-      rifle: editSession.rifle,
-      calibre: editSession.calibre,
-      bulletWeight: editSession.bulletWeight,
-      distance: editSession.distance,
-      elevation: editSession.elevation,
-      windage: editSession.windage,
-      shots: editSession.shots,
-      notes: editSession.notes || "",
-    } : {
+    defaultValues: {
       name: "",
       date: new Date().toISOString().split('T')[0],
       rifle: "",
@@ -54,6 +43,42 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
       notes: "",
     },
   });
+
+  // Update form when editSession changes
+  useEffect(() => {
+    setPhotoFile(null);
+    setDeleteExistingPhoto(false);
+    
+    if (editSession) {
+      console.log("Setting edit form data:", editSession);
+      form.reset({
+        name: editSession.name,
+        date: editSession.date,
+        rifle: editSession.rifle,
+        calibre: editSession.calibre,
+        bulletWeight: editSession.bulletWeight,
+        distance: editSession.distance,
+        elevation: editSession.elevation,
+        windage: editSession.windage,
+        shots: editSession.shots,
+        notes: editSession.notes || "",
+      });
+    } else {
+      console.log("Resetting to default form values");
+      form.reset({
+        name: "",
+        date: new Date().toISOString().split('T')[0],
+        rifle: "",
+        calibre: "",
+        bulletWeight: 168,
+        distance: 100,
+        elevation: null,
+        windage: null,
+        shots: Array(12).fill(""),
+        notes: "",
+      });
+    }
+  }, [editSession, form]);
 
   const sessionMutation = useMutation({
     mutationFn: async (data: InsertSession) => {

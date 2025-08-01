@@ -150,19 +150,34 @@ export class DatabaseStorage implements IStorage {
       totalScore = calculated.totalScore;
       vCount = calculated.vCount;
     }
+
+    // Prepare update object, handling explicit null values
+    const updateObj: any = { ...updateData };
+    
+    if (totalScore !== undefined) updateObj.totalScore = totalScore;
+    if (vCount !== undefined) updateObj.vCount = vCount;
+    
+    // Handle null values explicitly
+    if (updateData.hasOwnProperty('elevation')) {
+      updateObj.elevation = updateData.elevation;
+    }
+    if (updateData.hasOwnProperty('windage')) {
+      updateObj.windage = updateData.windage;
+    }
+    if (updateData.hasOwnProperty('photoUrl')) {
+      updateObj.photoUrl = updateData.photoUrl; // This will be null when explicitly deleting
+      console.log("Updating photoUrl to:", updateData.photoUrl);
+    }
+    if (updateData.hasOwnProperty('notes')) {
+      updateObj.notes = updateData.notes;
+    }
+    if (updateData.shots) {
+      updateObj.shots = updateData.shots.map(shot => shot.toString());
+    }
     
     const [session] = await db
       .update(sessions)
-      .set({
-        ...updateData,
-        ...(totalScore !== undefined && { totalScore }),
-        ...(vCount !== undefined && { vCount }),
-        elevation: updateData.elevation ?? undefined,
-        windage: updateData.windage ?? undefined,
-        photoUrl: updateData.photoUrl ?? undefined,
-        notes: updateData.notes ?? undefined,
-        shots: updateData.shots ? updateData.shots.map(shot => shot.toString()) : undefined,
-      })
+      .set(updateObj)
       .where(and(eq(sessions.id, id), eq(sessions.userId, userId)))
       .returning();
     return session || undefined;
