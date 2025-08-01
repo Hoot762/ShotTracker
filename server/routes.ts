@@ -196,11 +196,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/sessions", requireAuth, async (req, res) => {
     // Conditionally apply multer based on content type
     const isFormData = req.get('content-type')?.includes('multipart/form-data');
+    console.log("Content-Type:", req.get('content-type'));
+    console.log("Is form data:", isFormData);
     
     if (isFormData) {
       // Handle multipart form data with photo
       upload.single('photo')(req, res, async (err) => {
         if (err) {
+          console.error("Multer error:", err);
           return res.status(400).json({ message: "File upload error" });
         }
         await handleSessionCreation(req, res, true);
@@ -223,6 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sessionData = JSON.parse(req.body['sessionData']);
         } else {
           // If sessionData field is missing, the form data might be corrupted
+          console.log("Available form fields:", Object.keys(req.body));
           throw new Error("Session data missing from form upload");
         }
       } else {
