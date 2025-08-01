@@ -224,6 +224,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
 
+      // Log the data being validated for debugging
+      console.log("Session data to validate:", JSON.stringify(sessionData, null, 2));
+      
       // Validate session data
       const validatedData = insertSessionSchema.parse(sessionData);
       
@@ -246,8 +249,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (error instanceof Error) {
+        console.error("Session creation error:", error);
         res.status(400).json({ message: error.message });
       } else {
+        console.error("Unknown session creation error:", error);
         res.status(500).json({ message: "Failed to create session" });
       }
     }
