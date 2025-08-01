@@ -95,18 +95,18 @@ export default function SessionList({ sessions, isLoading, onSessionSelect, onSe
                       </div>
                     </div>
                     <div className="flex items-center space-x-4 ml-6">
+                      {session.photoUrl && (
+                        <img
+                          src={session.photoUrl}
+                          alt="Target photo"
+                          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                        />
+                      )}
                       <div className="text-right">
                         <div className="text-2xl font-bold text-slate-900">
                           {session.totalScore}
                         </div>
                         <div className="text-sm text-slate-500">{session.vCount} V's</div>
-                        {session.photoUrl && (
-                          <img
-                            src={session.photoUrl}
-                            alt="Target photo"
-                            className="w-16 h-16 rounded-lg object-cover mt-2"
-                          />
-                        )}
                       </div>
                       <div className="flex flex-col space-y-2">
                         <Button

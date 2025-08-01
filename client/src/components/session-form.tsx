@@ -23,6 +23,7 @@ interface SessionFormProps {
 
 export default function SessionForm({ isOpen, onToggle, editSession }: SessionFormProps) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [deleteExistingPhoto, setDeleteExistingPhoto] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isEditing = !!editSession;
@@ -64,6 +65,8 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         elevation: data.elevation !== null && data.elevation !== undefined ? Number(data.elevation) : null,
         windage: data.windage !== null && data.windage !== undefined ? Number(data.windage) : null,
         notes: data.notes || null,
+        // Handle photo deletion in edit mode
+        ...(isEditing && deleteExistingPhoto && !photoFile ? { photoUrl: null } : {}),
       };
 
       if (photoFile) {
@@ -89,6 +92,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         form.reset();
       }
       setPhotoFile(null);
+      setDeleteExistingPhoto(false);
       onToggle();
     },
     onError: (error: any) => {
@@ -276,7 +280,11 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
               <ScoringSection form={form} />
 
               {/* Photo Upload */}
-              <PhotoUpload onFileSelect={setPhotoFile} />
+              <PhotoUpload 
+                onFileSelect={setPhotoFile} 
+                existingPhotoUrl={editSession?.photoUrl}
+                onDeletePhoto={() => setDeleteExistingPhoto(true)}
+              />
 
               {/* Notes */}
               <FormField
