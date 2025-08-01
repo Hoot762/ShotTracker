@@ -37,6 +37,7 @@ declare module 'express-session' {
 
 // Authentication middleware
 const requireAuth = (req: Request, res: any, next: any) => {
+  console.log("Auth check - Session:", req.session.userId, "Cookie:", req.headers.cookie);
   if (!req.session.userId) {
     return res.status(401).json({ message: "Authentication required" });
   }

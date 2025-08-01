@@ -59,9 +59,10 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
         formData.append('sessionData', JSON.stringify(transformedData));
         formData.append('photo', photoFile);
         console.log("FormData entries:");
-        for (const [key, value] of formData.entries()) {
+        const entries = Array.from(formData.entries());
+        entries.forEach(([key, value]) => {
           console.log(key, typeof value === 'string' ? value : value.name);
-        }
+        });
         return apiRequest('POST', '/api/sessions', formData);
       } else {
         return apiRequest('POST', '/api/sessions', transformedData);
