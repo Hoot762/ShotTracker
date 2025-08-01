@@ -35,7 +35,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
       date: new Date().toISOString().split('T')[0],
       rifle: "",
       calibre: "",
-      bulletWeight: 168,
+      bulletWeight: 0,
       distance: 100,
       elevation: null,
       windage: null,
@@ -68,7 +68,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         date: new Date().toISOString().split('T')[0],
         rifle: "",
         calibre: "",
-        bulletWeight: 168,
+        bulletWeight: 0,
         distance: 100,
         elevation: null,
         windage: null,
@@ -231,6 +231,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
                           inputMode="numeric"
                           placeholder="168" 
                           {...field}
+                          value={field.value === 0 ? "" : field.value || ""}
                           onChange={e => field.onChange(e.target.value ? Number(e.target.value) : 0)} 
                         />
                       </FormControl>
