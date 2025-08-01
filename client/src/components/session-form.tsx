@@ -32,10 +32,10 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
       date: new Date().toISOString().split('T')[0],
       rifle: "",
       calibre: "",
-      bulletWeight: 0,
+      bulletWeight: 168,
       distance: 100,
-      elevation: undefined,
-      windage: undefined,
+      elevation: null,
+      windage: null,
       shots: Array(12).fill(""),
       notes: "",
     },
@@ -46,10 +46,11 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
       // Transform the data to ensure proper types
       const transformedData = {
         ...data,
-        bulletWeight: Number(data.bulletWeight) || 0,
+        bulletWeight: Number(data.bulletWeight) || 168,
         distance: Number(data.distance) || 100,
-        elevation: data.elevation ? Number(data.elevation) : null,
-        windage: data.windage ? Number(data.windage) : null,
+        elevation: data.elevation !== null && data.elevation !== undefined ? Number(data.elevation) : null,
+        windage: data.windage !== null && data.windage !== undefined ? Number(data.windage) : null,
+        notes: data.notes || null,
       };
 
       if (photoFile) {
@@ -71,10 +72,12 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
       setPhotoFile(null);
       onToggle();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("Session creation error:", error);
+      const errorMessage = error?.message || "Failed to create session";
       toast({
         title: "Error",
-        description: "Failed to create session",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -168,8 +171,8 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                         <Input 
                           type="number" 
                           placeholder="168" 
-                          value={field.value === 0 ? "" : field.value || ""} 
-                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")} 
+                          {...field}
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : 0)} 
                         />
                       </FormControl>
                       <FormMessage />
