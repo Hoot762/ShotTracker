@@ -207,8 +207,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Multer error:", err);
           return res.status(400).json({ message: "File upload error" });
         }
-        console.log("Multer processed successfully, req.body:", req.body);
-        console.log("File info:", req.file ? req.file.originalname : "No file");
+        console.log("=== MULTER DEBUG ===");
+        console.log("req.body:", JSON.stringify(req.body, null, 2));
+        console.log("req.body keys:", Object.keys(req.body || {}));
+        console.log("req.file:", req.file ? {
+          fieldname: req.file.fieldname,
+          originalname: req.file.originalname,
+          encoding: req.file.encoding,
+          mimetype: req.file.mimetype,
+          filename: req.file.filename
+        } : "No file");
+        console.log("===================");
         await handleSessionCreation(req, res, true);
       });
     } else {
