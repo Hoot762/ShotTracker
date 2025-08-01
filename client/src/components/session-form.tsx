@@ -131,7 +131,7 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                     <FormItem>
                       <FormLabel>Date *</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" className="max-w-40" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

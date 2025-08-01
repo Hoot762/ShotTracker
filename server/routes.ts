@@ -1,6 +1,7 @@
 import type { Express, Request } from "express";
 import express from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertSessionSchema, insertUserSchema, loginSchema, insertDopeCardSchema, insertDopeRangeSchema, type User } from "@shared/schema";
@@ -52,9 +53,15 @@ const requireAdmin = (req: Request, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration
+  // Session configuration with database store
+  const pgSession = connectPgSimple(session);
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    store: new pgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'session',
+      createTableIfMissing: true
+    }),
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     cookie: {
