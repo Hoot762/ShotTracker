@@ -11,6 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -38,6 +49,7 @@ const useLogout = () => {
 export default function DopePage() {
   const [showNewCard, setShowNewCard] = useState(false);
   const [selectedCard, setSelectedCard] = useState<DopeCard | null>(null);
+  const [cardToDelete, setCardToDelete] = useState<DopeCard | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const logoutMutation = useLogout();
@@ -65,9 +77,14 @@ export default function DopePage() {
     },
   });
 
-  const handleDeleteCard = (id: string) => {
-    if (confirm("Are you sure you want to delete this DOPE card?")) {
-      deleteCardMutation.mutate(id);
+  const handleDeleteCard = (card: DopeCard) => {
+    setCardToDelete(card);
+  };
+
+  const confirmDelete = () => {
+    if (cardToDelete) {
+      deleteCardMutation.mutate(cardToDelete.id);
+      setCardToDelete(null);
     }
   };
 
@@ -174,7 +191,7 @@ export default function DopePage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteCard(card.id);
+                            handleDeleteCard(card);
                           }}
                           className="text-red-600 hover:text-red-700 h-7 w-7 p-0"
                         >
@@ -227,6 +244,27 @@ export default function DopePage() {
           onClose={() => setSelectedCard(null)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!cardToDelete} onOpenChange={() => setCardToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete DOPE Card</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{cardToDelete?.name}"? This action cannot be undone and will permanently remove all range data associated with this DOPE card.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
