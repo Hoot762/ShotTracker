@@ -234,8 +234,15 @@ export default function Dashboard() {
                 isOpen={showNewSession || !!editSession} 
                 onToggle={() => {
                   console.log("SessionForm toggle clicked, showNewSession:", showNewSession, "editSession:", !!editSession);
-                  setShowNewSession(false);
-                  setEditSession(null);
+                  if (showNewSession || editSession) {
+                    // Close the form
+                    setShowNewSession(false);
+                    setEditSession(null);
+                  } else {
+                    // Open the form for new session
+                    setShowNewSession(true);
+                    setEditSession(null);
+                  }
                 }} 
                 editSession={editSession}
               />
