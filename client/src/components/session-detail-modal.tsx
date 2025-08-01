@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Session } from "@shared/schema";
 
@@ -9,24 +8,14 @@ interface SessionDetailModalProps {
   onClose: () => void;
 }
 
-function getScoreBadge(score: number) {
-  if (score >= 50) return { text: "Excellent", className: "bg-emerald-500/10 text-emerald-600" };
-  if (score >= 35) return { text: "Good", className: "bg-yellow-500/10 text-yellow-600" };
-  return { text: "Average", className: "bg-slate-100 text-slate-600" };
-}
-
 export default function SessionDetailModal({ session, onClose }: SessionDetailModalProps) {
-  const scoreBadge = getScoreBadge(session.totalScore);
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>{session.name}</span>
-            <Badge className={scoreBadge.className}>
-              {scoreBadge.text}
-            </Badge>
+          <DialogTitle>
+            {session.name}
           </DialogTitle>
         </DialogHeader>
         
