@@ -11,23 +11,36 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertSessionSchema, type InsertSession } from "@shared/schema";
+import { insertSessionSchema, type InsertSession, type Session } from "@shared/schema";
 import ScoringSection from "@/components/scoring-section";
 import PhotoUpload from "@/components/photo-upload";
 
 interface SessionFormProps {
   isOpen: boolean;
   onToggle: () => void;
+  editSession?: Session | null;
 }
 
-export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
+export default function SessionForm({ isOpen, onToggle, editSession }: SessionFormProps) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isEditing = !!editSession;
 
   const form = useForm<InsertSession>({
     resolver: zodResolver(insertSessionSchema),
-    defaultValues: {
+    defaultValues: editSession ? {
+      name: editSession.name,
+      date: editSession.date,
+      rifle: editSession.rifle,
+      calibre: editSession.calibre,
+      bulletWeight: editSession.bulletWeight,
+      distance: editSession.distance,
+      elevation: editSession.elevation,
+      windage: editSession.windage,
+      shots: editSession.shots,
+      notes: editSession.notes || "",
+    } : {
       name: "",
       date: new Date().toISOString().split('T')[0],
       rifle: "",
@@ -41,7 +54,7 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
     },
   });
 
-  const createSessionMutation = useMutation({
+  const sessionMutation = useMutation({
     mutationFn: async (data: InsertSession) => {
       // Transform the data to ensure proper types
       const transformedData = {
@@ -55,32 +68,32 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
 
       if (photoFile) {
         const formData = new FormData();
-        console.log("Transformed data before FormData:", transformedData);
         formData.append('sessionData', JSON.stringify(transformedData));
         formData.append('photo', photoFile);
-        console.log("FormData entries:");
-        const entries = Array.from(formData.entries());
-        entries.forEach(([key, value]) => {
-          console.log(key, typeof value === 'string' ? value : value.name);
-        });
-        return apiRequest('POST', '/api/sessions', formData);
+        const method = isEditing ? 'PUT' : 'POST';
+        const url = isEditing ? `/api/sessions/${editSession.id}` : '/api/sessions';
+        return apiRequest(method, url, formData);
       } else {
-        return apiRequest('POST', '/api/sessions', transformedData);
+        const method = isEditing ? 'PUT' : 'POST';
+        const url = isEditing ? `/api/sessions/${editSession.id}` : '/api/sessions';
+        return apiRequest(method, url, transformedData);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
       toast({
         title: "Success",
-        description: "Session created successfully",
+        description: isEditing ? "Session updated successfully" : "Session created successfully",
       });
-      form.reset();
+      if (!isEditing) {
+        form.reset();
+      }
       setPhotoFile(null);
       onToggle();
     },
     onError: (error: any) => {
-      console.error("Session creation error:", error);
-      const errorMessage = error?.message || "Failed to create session";
+      console.error("Session mutation error:", error);
+      const errorMessage = error?.message || `Failed to ${isEditing ? 'update' : 'create'} session`;
       toast({
         title: "Error",
         description: errorMessage,
@@ -90,7 +103,7 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
   });
 
   const onSubmit = (data: InsertSession) => {
-    createSessionMutation.mutate(data);
+    sessionMutation.mutate(data);
   };
 
   return (
@@ -99,7 +112,7 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
         <Button variant="ghost" onClick={onToggle} className="flex items-center justify-between w-full text-left p-0">
           <h3 className="text-lg font-semibold text-slate-900 flex items-center">
             <Plus className="mr-2 text-primary" size={20} />
-            New Shooting Session
+            {isEditing ? 'Edit Shooting Session' : 'New Shooting Session'}
           </h3>
           <ChevronDown className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} size={20} />
         </Button>
@@ -291,9 +304,9 @@ export default function SessionForm({ isOpen, onToggle }: SessionFormProps) {
                 <Button type="button" variant="outline" onClick={onToggle}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createSessionMutation.isPending}>
+                <Button type="submit" disabled={sessionMutation.isPending}>
                   <Save className="mr-2" size={16} />
-                  {createSessionMutation.isPending ? 'Saving...' : 'Save Session'}
+                  {sessionMutation.isPending ? 'Saving...' : (isEditing ? 'Update Session' : 'Save Session')}
                 </Button>
               </div>
             </form>

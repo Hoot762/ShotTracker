@@ -294,13 +294,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
   
   // Update session
-  app.put("/api/sessions/:id", requireAuth, upload.single('photo'), async (req, res) => {
+  app.put("/api/sessions/:id", requireAuth, async (req, res) => {
+    // Handle both FormData (with photo) and JSON requests  
+    const isFormData = req.get('content-type')?.includes('multipart/form-data');
+    
+    if (isFormData) {
+      // Handle multipart form data with photo
+      upload.single('photo')(req, res, async (err) => {
+        if (err) {
+          console.error("Multer error on update:", err);
+          return res.status(400).json({ message: "File upload error" });
+        }
+        await handleSessionUpdate(req, res, true);
+      });
+    } else {
+      // Handle JSON data without photo
+      await handleSessionUpdate(req, res, false);
+    }
+  });
+
+  async function handleSessionUpdate(req: any, res: any, hasPhoto: boolean) {
     try {
-      const sessionData = JSON.parse(req.body.sessionData || '{}');
+      let sessionData;
+      if (hasPhoto && req.body.sessionData) {
+        sessionData = JSON.parse(req.body.sessionData);
+      } else {
+        sessionData = req.body;
+      }
+      
       const validatedData = insertSessionSchema.partial().parse(sessionData);
       
       // Handle photo upload
-      if (req.file) {
+      if (hasPhoto && req.file) {
         validatedData.photoUrl = `/uploads/${req.file.filename}`;
       }
       
@@ -311,17 +336,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(session);
     } catch (error) {
-      if (req.file) {
+      // Clean up uploaded file if validation fails
+      if (hasPhoto && req.file) {
         await fs.unlink(req.file.path).catch(() => {});
       }
       
       if (error instanceof Error) {
+        console.error("Session update error:", error);
         res.status(400).json({ message: error.message });
       } else {
+        console.error("Unknown session update error:", error);
         res.status(500).json({ message: "Failed to update session" });
       }
     }
-  });
+  }
   
   // Delete session
   app.delete("/api/sessions/:id", requireAuth, async (req, res) => {

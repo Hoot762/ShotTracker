@@ -7,6 +7,7 @@ import SessionForm from "@/components/session-form";
 import SessionList from "@/components/session-list";
 import SessionFilters from "@/components/session-filters";
 import SessionDetailModal from "@/components/session-detail-modal";
+import DeleteSessionDialog from "@/components/delete-session-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,8 @@ interface FilterState {
 export default function Dashboard() {
   const [showNewSession, setShowNewSession] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [editSession, setEditSession] = useState<Session | null>(null);
+  const [deleteSession, setDeleteSession] = useState<Session | null>(null);
   const [filters, setFilters] = useState<FilterState>({});
   const { user } = useAuth();
   const { toast } = useToast();
@@ -218,8 +221,12 @@ export default function Dashboard() {
             <div className="lg:col-span-3 space-y-4 lg:space-y-6">
               {/* New Session Form */}
               <SessionForm 
-                isOpen={showNewSession} 
-                onToggle={() => setShowNewSession(!showNewSession)} 
+                isOpen={showNewSession || !!editSession} 
+                onToggle={() => {
+                  setShowNewSession(false);
+                  setEditSession(null);
+                }} 
+                editSession={editSession}
               />
 
               {/* Sessions List */}
@@ -227,6 +234,13 @@ export default function Dashboard() {
                 sessions={sessions || []}
                 isLoading={isLoading}
                 onSessionSelect={setSelectedSession}
+                onSessionEdit={(session) => {
+                  setEditSession(session);
+                  setShowNewSession(false);
+                }}
+                onSessionDelete={(session) => {
+                  setDeleteSession(session);
+                }}
               />
             </div>
 
@@ -245,6 +259,12 @@ export default function Dashboard() {
           onClose={() => setSelectedSession(null)}
         />
       )}
+
+      {/* Delete Session Dialog */}
+      <DeleteSessionDialog
+        session={deleteSession}
+        onClose={() => setDeleteSession(null)}
+      />
     </div>
   );
 }

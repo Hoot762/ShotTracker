@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Grid, List } from "lucide-react";
+import { Grid, List, Edit, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Session } from "@shared/schema";
 
@@ -8,11 +8,13 @@ interface SessionListProps {
   sessions: Session[];
   isLoading: boolean;
   onSessionSelect: (session: Session) => void;
+  onSessionEdit: (session: Session) => void;
+  onSessionDelete: (session: Session) => void;
 }
 
 
 
-export default function SessionList({ sessions, isLoading, onSessionSelect }: SessionListProps) {
+export default function SessionList({ sessions, isLoading, onSessionSelect, onSessionEdit, onSessionDelete }: SessionListProps) {
   if (isLoading) {
     return (
       <Card>
@@ -62,13 +64,12 @@ export default function SessionList({ sessions, isLoading, onSessionSelect }: Se
           <div className="divide-y divide-slate-200">
             {sessions.map((session) => {
               return (
-                <div
-                  key={session.id}
-                  className="p-6 hover:bg-slate-50 transition-colors cursor-pointer"
-                  onClick={() => onSessionSelect(session)}
-                >
+                <div key={session.id} className="p-6 hover:bg-slate-50 transition-colors">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => onSessionSelect(session)}
+                    >
                       <div className="flex items-center space-x-3 mb-2">
                         <h4 className="text-lg font-semibold text-slate-900">{session.name}</h4>
                       </div>
@@ -93,18 +94,44 @@ export default function SessionList({ sessions, isLoading, onSessionSelect }: Se
                         </div>
                       </div>
                     </div>
-                    <div className="text-right ml-6">
-                      <div className="text-2xl font-bold text-slate-900">
-                        {session.totalScore}
+                    <div className="flex items-center space-x-4 ml-6">
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-slate-900">
+                          {session.totalScore}
+                        </div>
+                        <div className="text-sm text-slate-500">{session.vCount} V's</div>
+                        {session.photoUrl && (
+                          <img
+                            src={session.photoUrl}
+                            alt="Target photo"
+                            className="w-16 h-16 rounded-lg object-cover mt-2"
+                          />
+                        )}
                       </div>
-                      <div className="text-sm text-slate-500">{session.vCount} V's</div>
-                      {session.photoUrl && (
-                        <img
-                          src={session.photoUrl}
-                          alt="Target photo"
-                          className="w-16 h-16 rounded-lg object-cover mt-2"
-                        />
-                      )}
+                      <div className="flex flex-col space-y-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSessionEdit(session);
+                          }}
+                          className="p-2 h-8 w-8"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSessionDelete(session);
+                          }}
+                          className="p-2 h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
