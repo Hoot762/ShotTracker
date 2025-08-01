@@ -146,23 +146,26 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
     sessionMutation.mutate(data);
   };
 
+  console.log("SessionForm render - isOpen:", isOpen, "editSession:", !!editSession);
+
   return (
     <Card>
-      <div className="p-6 border-b border-slate-200">
-        <Button 
-          variant="ghost" 
-          onClick={(e) => {
-            console.log("SessionForm header clicked, current isOpen:", isOpen);
-            onToggle();
-          }} 
-          className="flex items-center justify-between w-full text-left p-0 hover:bg-slate-50"
-        >
-          <h3 className="text-lg font-semibold text-slate-900 flex items-center pointer-events-none">
+      <div 
+        className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("SessionForm header div clicked, current isOpen:", isOpen);
+          onToggle();
+        }}
+      >
+        <div className="flex items-center justify-between w-full">
+          <h3 className="text-lg font-semibold text-slate-900 flex items-center">
             <Plus className="mr-2 text-primary" size={20} />
             {isEditing ? 'Edit Shooting Session' : 'New Shooting Session'}
           </h3>
-          <ChevronDown className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''} pointer-events-none`} size={20} />
-        </Button>
+          <ChevronDown className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} size={20} />
+        </div>
       </div>
       
       {isOpen && (
