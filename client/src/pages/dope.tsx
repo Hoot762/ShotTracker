@@ -59,19 +59,23 @@ export default function DopePage() {
     enabled: true,
   });
 
+  const queryClient = useQueryClient();
+  
   const deleteCardMutation = useMutation({
     mutationFn: (id: string) => apiRequest("DELETE", `/api/dope-cards/${id}`),
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ["/api/dope-cards"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dope-cards"] });
       toast({
         title: "Success",
         description: "DOPE card deleted successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Delete error:", error);
+      const errorMessage = error?.message || "Failed to delete DOPE card";
       toast({
         title: "Error",
-        description: "Failed to delete DOPE card",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -81,10 +85,15 @@ export default function DopePage() {
     setCardToDelete(card);
   };
 
-  const confirmDelete = () => {
-    if (cardToDelete) {
-      deleteCardMutation.mutate(cardToDelete.id);
-      setCardToDelete(null);
+  const confirmDelete = async () => {
+    if (cardToDelete && !deleteCardMutation.isPending) {
+      try {
+        await deleteCardMutation.mutateAsync(cardToDelete.id);
+        setCardToDelete(null);
+      } catch (error) {
+        // Error is already handled in the mutation's onError
+        console.error("Failed to delete DOPE card:", error);
+      }
     }
   };
 
@@ -258,9 +267,10 @@ export default function DopePage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={deleteCardMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 disabled:opacity-50"
             >
-              Delete
+              {deleteCardMutation.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

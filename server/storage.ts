@@ -102,7 +102,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: string): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async verifyPassword(user: User, password: string): Promise<boolean> {
@@ -171,7 +171,7 @@ export class DatabaseStorage implements IStorage {
   async deleteSession(id: string, userId: string): Promise<boolean> {
     const result = await db.delete(sessions)
       .where(and(eq(sessions.id, id), eq(sessions.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getFilteredSessions(filters: {
@@ -241,7 +241,7 @@ export class DatabaseStorage implements IStorage {
   async deleteDopeCard(id: string, userId: string): Promise<boolean> {
     const result = await db.delete(dopeCards)
       .where(and(eq(dopeCards.id, id), eq(dopeCards.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // DOPE Range methods
@@ -267,7 +267,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDopeRange(id: string): Promise<boolean> {
     const result = await db.delete(dopeRanges).where(eq(dopeRanges.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 }
 
