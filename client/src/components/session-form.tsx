@@ -65,9 +65,20 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         elevation: data.elevation !== null && data.elevation !== undefined ? Number(data.elevation) : null,
         windage: data.windage !== null && data.windage !== undefined ? Number(data.windage) : null,
         notes: data.notes || null,
-        // Handle photo deletion in edit mode
-        ...(isEditing && deleteExistingPhoto && !photoFile ? { photoUrl: null } : {}),
       };
+
+      // Handle photo deletion in edit mode
+      if (isEditing && deleteExistingPhoto && !photoFile) {
+        transformedData.photoUrl = null;
+        console.log("Marking photo for deletion");
+      }
+
+      console.log("Submitting session data:", {
+        ...transformedData,
+        deleteExistingPhoto,
+        hasPhotoFile: !!photoFile,
+        isEditing
+      });
 
       if (photoFile) {
         const formData = new FormData();

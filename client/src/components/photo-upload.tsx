@@ -43,6 +43,14 @@ export default function PhotoUpload({ onFileSelect, existingPhotoUrl, onDeletePh
     onFileSelect(null);
   };
 
+  const handleReplacePhoto = () => {
+    // When clicking to replace, first mark existing as deleted
+    if (existingPhotoUrl && showExisting) {
+      onDeletePhoto?.();
+    }
+    fileInputRef.current?.click();
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
@@ -62,7 +70,7 @@ export default function PhotoUpload({ onFileSelect, existingPhotoUrl, onDeletePh
         className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={handleReplacePhoto}
       >
         {preview ? (
           <div className="space-y-2">

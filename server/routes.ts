@@ -322,11 +322,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionData = req.body;
       }
       
+      console.log("Update session data:", sessionData);
+      
       const validatedData = insertSessionSchema.partial().parse(sessionData);
       
-      // Handle photo upload
+      // Handle photo upload - new photo provided
       if (hasPhoto && req.file) {
         validatedData.photoUrl = `/uploads/${req.file.filename}`;
+        console.log("New photo uploaded:", validatedData.photoUrl);
+      }
+      
+      // Handle explicit photo deletion (photoUrl set to null)
+      if (sessionData.hasOwnProperty('photoUrl') && sessionData.photoUrl === null) {
+        validatedData.photoUrl = null;
+        console.log("Photo explicitly deleted");
       }
       
       const session = await storage.updateSession(req.params.id, validatedData, req.session.userId!);
