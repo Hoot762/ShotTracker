@@ -12,13 +12,20 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const config: RequestInit = {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
-  });
+  };
 
+  if (data instanceof FormData) {
+    // For FormData, don't set Content-Type - let browser set it with boundary
+    config.body = data;
+  } else if (data) {
+    config.headers = { "Content-Type": "application/json" };
+    config.body = JSON.stringify(data);
+  }
+
+  const res = await fetch(url, config);
   await throwIfResNotOk(res);
   return res;
 }
