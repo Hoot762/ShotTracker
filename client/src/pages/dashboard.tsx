@@ -74,7 +74,7 @@ export default function Dashboard() {
     best: sessions.length > 0 ? Math.max(...sessions.map(s => s.totalScore)) : 0,
   } : { total: 0, average: 0, best: 0 };
 
-  console.log("Dashboard render - showNewSession:", showNewSession, "editSession:", !!editSession);
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -103,7 +103,6 @@ export default function Dashboard() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => {
-                      console.log("Mobile New Session clicked, current showNewSession:", showNewSession);
                       setEditSession(null);
                       setShowNewSession(!showNewSession);
                     }}>
@@ -123,7 +122,6 @@ export default function Dashboard() {
               {/* Desktop Buttons */}
               <Button 
                 onClick={() => {
-                  console.log("New Session button clicked, current showNewSession:", showNewSession);
                   setEditSession(null);
                   setShowNewSession(!showNewSession);
                 }}
@@ -233,7 +231,6 @@ export default function Dashboard() {
               <SessionForm 
                 isOpen={showNewSession || !!editSession} 
                 onToggle={() => {
-                  console.log("SessionForm toggle clicked, showNewSession:", showNewSession, "editSession:", !!editSession);
                   if (showNewSession || editSession) {
                     // Close the form
                     setShowNewSession(false);

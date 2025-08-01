@@ -50,7 +50,6 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
     setDeleteExistingPhoto(false);
     
     if (editSession) {
-      console.log("Setting edit form data:", editSession);
       form.reset({
         name: editSession.name,
         date: editSession.date,
@@ -64,7 +63,6 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         notes: editSession.notes || "",
       });
     } else {
-      console.log("Resetting to default form values");
       form.reset({
         name: "",
         date: new Date().toISOString().split('T')[0],
@@ -95,15 +93,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
       // Handle photo deletion in edit mode
       if (isEditing && deleteExistingPhoto && !photoFile) {
         transformedData.photoUrl = null;
-        console.log("Marking photo for deletion");
       }
-
-      console.log("Submitting session data:", {
-        ...transformedData,
-        deleteExistingPhoto,
-        hasPhotoFile: !!photoFile,
-        isEditing
-      });
 
       if (photoFile) {
         const formData = new FormData();
@@ -146,7 +136,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
     sessionMutation.mutate(data);
   };
 
-  console.log("SessionForm render - isOpen:", isOpen, "editSession:", !!editSession);
+
 
   return (
     <Card>
@@ -155,7 +145,6 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("SessionForm header div clicked, current isOpen:", isOpen);
           onToggle();
         }}
       >
