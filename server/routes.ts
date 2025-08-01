@@ -215,17 +215,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Handle both form-data (with photo) and JSON requests
       let sessionData;
-      if (hasPhoto && req.body.sessionData) {
-        // Form data request with photo
-        sessionData = JSON.parse(req.body.sessionData);
+      if (hasPhoto) {
+        // Form data request with photo - try different field names
+        if (req.body.sessionData) {
+          sessionData = JSON.parse(req.body.sessionData);
+        } else if (req.body['sessionData']) {
+          sessionData = JSON.parse(req.body['sessionData']);
+        } else {
+          // If sessionData field is missing, the form data might be corrupted
+          throw new Error("Session data missing from form upload");
+        }
       } else {
         // Direct JSON request without photo
         sessionData = req.body;
       }
       
-
-      // Log the data being validated for debugging
-      console.log("Session data to validate:", JSON.stringify(sessionData, null, 2));
+      // Debug log to see what we received
+      console.log("Has photo:", hasPhoto);
+      console.log("Raw req.body:", req.body);
+      console.log("Parsed sessionData:", sessionData);
       
       // Validate session data
       const validatedData = insertSessionSchema.parse(sessionData);
