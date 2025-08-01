@@ -220,14 +220,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle both form-data (with photo) and JSON requests
       let sessionData;
       if (hasPhoto) {
-        // Form data request with photo - try different field names
-        if (req.body.sessionData) {
-          sessionData = JSON.parse(req.body.sessionData);
-        } else if (req.body['sessionData']) {
-          sessionData = JSON.parse(req.body['sessionData']);
+        // Form data request with photo
+        console.log("Available form fields:", Object.keys(req.body || {}));
+        
+        if (req.body && req.body.sessionData) {
+          try {
+            sessionData = JSON.parse(req.body.sessionData);
+          } catch (parseError) {
+            console.error("JSON parse error:", parseError);
+            throw new Error("Invalid session data format");
+          }
         } else {
-          // If sessionData field is missing, the form data might be corrupted
-          console.log("Available form fields:", Object.keys(req.body));
           throw new Error("Session data missing from form upload");
         }
       } else {
@@ -238,6 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Debug log to see what we received
       console.log("Has photo:", hasPhoto);
       console.log("Raw req.body:", req.body);
+      console.log("req.body.sessionData:", req.body.sessionData);
       console.log("Parsed sessionData:", sessionData);
       
       // Validate session data
