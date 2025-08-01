@@ -228,6 +228,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
                       <FormControl>
                         <Input 
                           type="number" 
+                          inputMode="numeric"
                           placeholder="168" 
                           {...field}
                           onChange={e => field.onChange(e.target.value ? Number(e.target.value) : 0)} 
@@ -280,7 +281,8 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
                       <FormControl>
                         <Input 
                           type="number" 
-                          step="0.25" 
+                          step="0.25"
+                          inputMode="decimal"
                           placeholder="2.5" 
                           value={field.value === 0 ? "" : field.value || ""} 
                           onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")} 
@@ -299,7 +301,8 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
                       <FormControl>
                         <Input 
                           type="number" 
-                          step="0.25" 
+                          step="0.25"
+                          inputMode="decimal"
                           placeholder="0.75" 
                           value={field.value === 0 ? "" : field.value || ""} 
                           onChange={e => field.onChange(e.target.value ? Number(e.target.value) : "")} 

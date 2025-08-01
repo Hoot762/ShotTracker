@@ -213,6 +213,7 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             <Input
                               type="number"
                               step="0.25"
+                              inputMode="decimal"
                               placeholder="Enter MOA"
                               value={editingRange.elevation || ""}
                               onChange={(e) => setEditingRange({
@@ -233,6 +234,7 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             <Input
                               type="number"
                               step="0.25"
+                              inputMode="decimal"
                               placeholder="Enter MOA"
                               value={editingRange.windage || ""}
                               onChange={(e) => setEditingRange({
@@ -371,6 +373,7 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                           <Input
                             type="number"
                             step="0.25"
+                            inputMode="decimal"
                             placeholder="Enter MOA"
                             value={editingRange.elevation || ""}
                             onChange={(e) => setEditingRange({
@@ -395,6 +398,7 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                           <Input
                             type="number"
                             step="0.25"
+                            inputMode="decimal"
                             placeholder="Enter MOA"
                             value={editingRange.windage || ""}
                             onChange={(e) => setEditingRange({
