@@ -104,17 +104,7 @@ export default function DopePage() {
       
       console.log("Fetched ranges:", ranges);
       
-      // Check if ranges is empty
-      if (!ranges || ranges.length === 0) {
-        toast({
-          title: "No Data",
-          description: "This DOPE card has no range data to export",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Generate ASCII table content
+      // Generate ASCII table content - even if ranges is empty
       const generateAsciiTable = (card: DopeCard, ranges: DopeRange[]) => {
         const title = `DOPE CARD: ${card.rifle} - ${card.calibre}`;
         const subtitle = `Card Name: ${card.name}`;
@@ -130,14 +120,26 @@ export default function DopePage() {
         content += `|   (yds)  |  (MOA)  |   (MOA)   |\n`;
         content += `${minorDivider}\n`;
         
-        // Sort ranges by distance
-        const sortedRanges = [...ranges].sort((a, b) => a.range - b.range);
-        
-        for (const range of sortedRanges) {
-          const distance = range.range.toString().padStart(6);
-          const windage = (range.windage ?? 0).toFixed(1).padStart(6);
-          const elevation = (range.elevation ?? 0).toFixed(1).padStart(7);
-          content += `|${distance}  |${windage}  |${elevation}  |\n`;
+        if (ranges && ranges.length > 0) {
+          // Sort ranges by distance
+          const sortedRanges = [...ranges].sort((a, b) => a.range - b.range);
+          
+          for (const range of sortedRanges) {
+            const distance = range.range.toString().padStart(6);
+            // Handle null/undefined values by showing blank spaces
+            const windage = range.windage !== null && range.windage !== undefined 
+              ? range.windage.toFixed(1).padStart(6)
+              : "".padStart(6);
+            const elevation = range.elevation !== null && range.elevation !== undefined 
+              ? range.elevation.toFixed(1).padStart(7)
+              : "".padStart(7);
+            content += `|${distance}  |${windage}  |${elevation}  |\n`;
+          }
+        } else {
+          // Empty table message
+          content += `|          |         |           |\n`;
+          content += `|    (No range data available)    |\n`;
+          content += `|          |         |           |\n`;
         }
         
         content += `${minorDivider}\n\n`;

@@ -215,10 +215,10 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                               step="0.25"
                               inputMode="decimal"
                               placeholder="Enter MOA"
-                              value={editingRange.elevation || ""}
+                              value={editingRange.elevation !== null ? editingRange.elevation : ""}
                               onChange={(e) => setEditingRange({
                                 ...editingRange,
-                                elevation: e.target.value ? Number(e.target.value) : null
+                                elevation: e.target.value !== "" ? Number(e.target.value) : null
                               })}
                               className="w-20 sm:w-28 h-8 text-sm"
                               autoFocus
@@ -236,10 +236,10 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                               step="0.25"
                               inputMode="decimal"
                               placeholder="Enter MOA"
-                              value={editingRange.windage || ""}
+                              value={editingRange.windage !== null ? editingRange.windage : ""}
                               onChange={(e) => setEditingRange({
                                 ...editingRange,
-                                windage: e.target.value ? Number(e.target.value) : null
+                                windage: e.target.value !== "" ? Number(e.target.value) : null
                               })}
                               className="w-20 sm:w-28 h-8 text-sm"
                             />
@@ -375,10 +375,10 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             step="0.25"
                             inputMode="decimal"
                             placeholder="Enter MOA"
-                            value={editingRange.elevation || ""}
+                            value={editingRange.elevation !== null ? editingRange.elevation : ""}
                             onChange={(e) => setEditingRange({
                               ...editingRange,
-                              elevation: e.target.value ? Number(e.target.value) : null
+                              elevation: e.target.value !== "" ? Number(e.target.value) : null
                             })}
                             className="w-full h-10"
                             autoFocus
@@ -400,10 +400,10 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
                             step="0.25"
                             inputMode="decimal"
                             placeholder="Enter MOA"
-                            value={editingRange.windage || ""}
+                            value={editingRange.windage !== null ? editingRange.windage : ""}
                             onChange={(e) => setEditingRange({
                               ...editingRange,
-                              windage: e.target.value ? Number(e.target.value) : null
+                              windage: e.target.value !== "" ? Number(e.target.value) : null
                             })}
                             className="w-full h-10"
                           />
