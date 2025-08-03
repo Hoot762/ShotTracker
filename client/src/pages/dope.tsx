@@ -99,19 +99,27 @@ export default function DopePage() {
 
   const downloadDopeCard = async (card: DopeCard) => {
     try {
+      console.log("Starting download for card:", card.id);
+      
       // Fetch the range data for this card
       const ranges: DopeRange[] = await apiRequest("GET", `/api/dope-cards/${card.id}/ranges`);
       
       console.log("Fetched ranges:", ranges);
       console.log("Number of ranges:", ranges?.length);
-      ranges?.forEach((range, index) => {
-        console.log(`Range ${index}:`, {
-          range: range.range,
-          elevation: range.elevation,
-          windage: range.windage,
-          id: range.id
+      console.log("Type of ranges:", typeof ranges);
+      
+      if (Array.isArray(ranges)) {
+        ranges.forEach((range, index) => {
+          console.log(`Range ${index}:`, {
+            range: range.range,
+            elevation: range.elevation,
+            windage: range.windage,
+            id: range.id
+          });
         });
-      });
+      } else {
+        console.log("Ranges is not an array:", ranges);
+      }
       
       // Generate ASCII table content - even if ranges is empty
       const generateAsciiTable = (card: DopeCard, ranges: DopeRange[]) => {
@@ -129,7 +137,7 @@ export default function DopePage() {
         content += `|   (yds)  |  (MOA)  |   (MOA)   |\n`;
         content += `${minorDivider}\n`;
         
-        if (ranges && ranges.length > 0) {
+        if (Array.isArray(ranges) && ranges.length > 0) {
           // Sort ranges by distance
           const sortedRanges = [...ranges].sort((a, b) => a.range - b.range);
           console.log("Sorted ranges for export:", sortedRanges);
