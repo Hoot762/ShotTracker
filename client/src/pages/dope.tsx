@@ -103,6 +103,15 @@ export default function DopePage() {
       const ranges: DopeRange[] = await apiRequest("GET", `/api/dope-cards/${card.id}/ranges`);
       
       console.log("Fetched ranges:", ranges);
+      console.log("Number of ranges:", ranges?.length);
+      ranges?.forEach((range, index) => {
+        console.log(`Range ${index}:`, {
+          range: range.range,
+          elevation: range.elevation,
+          windage: range.windage,
+          id: range.id
+        });
+      });
       
       // Generate ASCII table content - even if ranges is empty
       const generateAsciiTable = (card: DopeCard, ranges: DopeRange[]) => {
@@ -123,6 +132,7 @@ export default function DopePage() {
         if (ranges && ranges.length > 0) {
           // Sort ranges by distance
           const sortedRanges = [...ranges].sort((a, b) => a.range - b.range);
+          console.log("Sorted ranges for export:", sortedRanges);
           
           for (const range of sortedRanges) {
             const distance = range.range.toString().padStart(6);
@@ -133,9 +143,19 @@ export default function DopePage() {
             const elevation = range.elevation !== null && range.elevation !== undefined 
               ? range.elevation.toFixed(1).padStart(7)
               : "".padStart(7);
+            
+            console.log(`Exporting range ${range.range}:`, {
+              distance,
+              windage: range.windage,
+              elevation: range.elevation,
+              windageFormatted: windage,
+              elevationFormatted: elevation
+            });
+            
             content += `|${distance}  |${windage}  |${elevation}  |\n`;
           }
         } else {
+          console.log("No ranges to export");
           // Empty table message
           content += `|          |         |           |\n`;
           content += `|    (No range data available)    |\n`;
