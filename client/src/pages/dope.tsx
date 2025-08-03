@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Target, Edit2, Trash2, Settings, LogOut, ArrowLeft } from "lucide-react";
+import { Plus, Target, Edit2, Trash2, Settings, LogOut, ArrowLeft, Download } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,71 @@ export default function DopePage() {
     }
   };
 
+  const downloadDopeCard = async (card: DopeCard) => {
+    try {
+      // Fetch the range data for this card
+      const ranges = await apiRequest("GET", `/api/dope-cards/${card.id}/ranges`);
+      
+      // Generate ASCII table content
+      const generateAsciiTable = (card: DopeCard, ranges: DopeRange[]) => {
+        const title = `DOPE CARD: ${card.rifle} - ${card.calibre}`;
+        const subtitle = `Card Name: ${card.name}`;
+        const divider = "=".repeat(60);
+        const minorDivider = "-".repeat(60);
+        
+        let content = `${divider}\n`;
+        content += `${title.padStart((60 + title.length) / 2)}\n`;
+        content += `${subtitle.padStart((60 + subtitle.length) / 2)}\n`;
+        content += `${divider}\n\n`;
+        content += `${minorDivider}\n`;
+        content += `| Distance | Windage | Elevation |\n`;
+        content += `|   (yds)  |  (MOA)  |   (MOA)   |\n`;
+        content += `${minorDivider}\n`;
+        
+        // Sort ranges by distance
+        const sortedRanges = [...ranges].sort((a, b) => a.range - b.range);
+        
+        for (const range of sortedRanges) {
+          const distance = range.range.toString().padStart(6);
+          const windage = (range.windage ?? 0).toFixed(1).padStart(6);
+          const elevation = (range.elevation ?? 0).toFixed(1).padStart(7);
+          content += `|${distance}  |${windage}  |${elevation}  |\n`;
+        }
+        
+        content += `${minorDivider}\n\n`;
+        content += `Generated: ${new Date().toLocaleString()}\n`;
+        content += `ShotTracker Pro - Precision Shooting Logger\n`;
+        
+        return content;
+      };
+      
+      const content = generateAsciiTable(card, ranges);
+      const filename = `DOPE_${card.rifle.replace(/\s+/g, '_')}_${card.calibre.replace(/\s+/g, '_')}.txt`;
+      
+      // Create and download the file
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Success",
+        description: `DOPE card exported as ${filename}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export DOPE card",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -184,6 +249,18 @@ export default function DopePage() {
                     <CardTitle className="flex items-center justify-between">
                       <span className="text-base font-semibold truncate">{card.name}</span>
                       <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadDopeCard(card);
+                          }}
+                          className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700"
+                          title="Download as .txt file"
+                        >
+                          <Download size={14} />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
