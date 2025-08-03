@@ -4,12 +4,14 @@
 
 ShotTracker Pro is a precision shooting logger application designed for tracking and analyzing shooting sessions. The application allows users to record detailed information about their shooting sessions, including rifle specifications, environmental conditions, shot scoring, and photos. It provides comprehensive filtering and analysis capabilities to help shooters track their progress and identify patterns in their performance.
 
-## Recent Changes (July 31, 2025)
+## Recent Changes (August 3, 2025)
 
-- **Fixed Data Saving Issues**: Resolved critical validation errors in session creation by fixing form default values, adding proper type conversion, and updating validation schemas to handle optional fields correctly
-- **Improved DOPE Card Interface**: Enhanced mobile responsiveness with better spacing, optimized table styling, and replaced "Add Range" button with "Save & Close" functionality
-- **Fixed Range Editing Bug**: Corrected DOPE card range editing to work for all distances (100-1200 yards) instead of defaulting to 100 yards only
-- **Enhanced Mobile Experience**: Improved touch-friendly controls, better button sizing, and optimized input field layouts for mobile devices
+- **Comprehensive Export System**: Implemented complete CSV/PDF export functionality with smart filtering and professional formatting
+- **Enhanced DOPE Card Export**: Fixed column ordering (Distance | Elevation | Windage), perfect data alignment, and complete range coverage (100-1200 yards)
+- **Export Integration**: Added export buttons to dashboard header with mobile/desktop responsive design
+- **Professional Data Format**: CSV exports include all session data with proper field organization; PDF exports feature summary tables and detailed breakdowns
+- **Smart File Naming**: Automatic filename generation based on applied filters for organized data exports
+- **Zero Value Handling**: Proper display and export of 0.0 values in DOPE cards and session data
 
 ## User Preferences
 
@@ -53,6 +55,8 @@ Preferred communication style: Simple, everyday language.
 - **Photo Upload**: Image attachment with file type and size validation
 - **Filtering System**: Multi-criteria filtering by name, date range, rifle, and distance
 - **Score Calculation**: Automatic total score and V-count calculation
+- **DOPE Card Management**: Digital scope setting cards with ASCII table export functionality
+- **Data Export System**: Comprehensive CSV/PDF export with smart filtering and professional formatting
 - **Role-Based Access**: Admin users can access user management features
 - **Responsive Design**: Mobile-first approach with adaptive layouts
 
@@ -86,6 +90,11 @@ Preferred communication style: Simple, everyday language.
 - **Neon Database**: Serverless PostgreSQL database provider
 - **Zod**: TypeScript-first schema validation library
 - **Drizzle-Zod**: Integration between Drizzle ORM and Zod validation
+
+### Export and Reporting
+- **jsPDF**: PDF generation library for professional document export
+- **jsPDF-AutoTable**: Table generation plugin for structured PDF reports
+- **CSV Export**: Native JavaScript CSV generation with proper escaping
 
 ### Development Tools
 - **Vite**: Build tool with development server and production bundling
