@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Target, TrendingUp, Trophy, LogOut, Settings, Plus } from "lucide-react";
+import { Target, TrendingUp, Trophy, LogOut, Settings, Plus, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth, useLogout } from "@/hooks/useAuth";
 import SessionForm from "@/components/session-form";
@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { exportFilteredSessions } from "@/lib/exportUtils";
 import type { Session } from "@shared/schema";
 
 interface FilterState {
@@ -66,6 +67,32 @@ export default function Dashboard() {
         });
       },
     });
+  };
+
+  const handleExport = (format: 'csv' | 'pdf') => {
+    if (!sessions || sessions.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "Please add some shooting sessions first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const exportedCount = exportFilteredSessions(sessions, filters, format);
+      toast({
+        title: "Export successful",
+        description: `${exportedCount} sessions exported as ${format.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export failed",
+        description: "There was an error exporting your data",
+        variant: "destructive",
+      });
+    }
   };
 
   const stats = sessions ? {
@@ -120,6 +147,15 @@ export default function Dashboard() {
                         DOPE Cards
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleExport('csv')}>
+                      <FileSpreadsheet className="mr-2" size={14} />
+                      Export CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                      <FileText className="mr-2" size={14} />
+                      Export PDF
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -145,6 +181,26 @@ export default function Dashboard() {
                   DOPE Cards
                 </Link>
               </Button>
+              
+              {/* Export Dropdown for Desktop */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="hidden sm:flex items-center">
+                    <Download className="mr-2" size={16} />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    <FileSpreadsheet className="mr-2" size={16} />
+                    Export as CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                    <FileText className="mr-2" size={16} />
+                    Export as PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               {/* User Menu */}
               <DropdownMenu>
