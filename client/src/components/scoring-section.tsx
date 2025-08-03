@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Target } from "lucide-react";
+import { Target, Minus, Plus } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { calculateScore } from "@/lib/scoring";
 import type { InsertSession } from "@shared/schema";
 
@@ -10,9 +12,27 @@ interface ScoringSectionProps {
 }
 
 export default function ScoringSection({ form }: ScoringSectionProps) {
+  const [markersRemoved, setMarkersRemoved] = useState(false);
   const shots = form.watch("shots");
   
   const { totalScore, vCount } = calculateScore(shots);
+  
+  // Calculate adjusted score based on markers state
+  const getAdjustedScore = () => {
+    if (!markersRemoved) return totalScore;
+    
+    // Subtract shot 1 and shot 2 from total score
+    const shot1Value = shots[0] === 'V' ? 5 : (Number(shots[0]) || 0);
+    const shot2Value = shots[1] === 'V' ? 5 : (Number(shots[1]) || 0);
+    
+    return Math.max(0, totalScore - shot1Value - shot2Value);
+  };
+  
+  const adjustedScore = getAdjustedScore();
+  
+  const handleToggleMarkers = () => {
+    setMarkersRemoved(!markersRemoved);
+  };
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4">
@@ -60,7 +80,10 @@ export default function ScoringSection({ form }: ScoringSectionProps) {
         <div className="flex space-x-6">
           <div>
             <p className="text-sm font-medium text-slate-600">Total Score</p>
-            <p className="text-2xl font-bold text-slate-900">{totalScore}</p>
+            <p className="text-2xl font-bold text-slate-900">{adjustedScore}</p>
+            {markersRemoved && (
+              <p className="text-xs text-orange-600">Markers removed (-{totalScore - adjustedScore})</p>
+            )}
           </div>
           <div>
             <p className="text-sm font-medium text-slate-600">V Count</p>
@@ -71,6 +94,29 @@ export default function ScoringSection({ form }: ScoringSectionProps) {
           <p className="text-xs text-slate-500">Auto-calculated</p>
           <p className="text-sm font-medium text-slate-600">V = 5 points</p>
         </div>
+      </div>
+
+      {/* Remove/Add Markers Button */}
+      <div className="mt-4 flex justify-center">
+        <Button 
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleToggleMarkers}
+          className="flex items-center space-x-2"
+        >
+          {markersRemoved ? (
+            <>
+              <Plus size={16} />
+              <span>Add Markers</span>
+            </>
+          ) : (
+            <>
+              <Minus size={16} />
+              <span>Remove Markers</span>
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
