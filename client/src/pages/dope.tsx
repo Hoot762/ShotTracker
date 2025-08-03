@@ -100,7 +100,19 @@ export default function DopePage() {
   const downloadDopeCard = async (card: DopeCard) => {
     try {
       // Fetch the range data for this card
-      const ranges = await apiRequest("GET", `/api/dope-cards/${card.id}/ranges`);
+      const ranges: DopeRange[] = await apiRequest("GET", `/api/dope-cards/${card.id}/ranges`);
+      
+      console.log("Fetched ranges:", ranges);
+      
+      // Check if ranges is empty
+      if (!ranges || ranges.length === 0) {
+        toast({
+          title: "No Data",
+          description: "This DOPE card has no range data to export",
+          variant: "destructive",
+        });
+        return;
+      }
       
       // Generate ASCII table content
       const generateAsciiTable = (card: DopeCard, ranges: DopeRange[]) => {
@@ -154,9 +166,10 @@ export default function DopePage() {
         description: `DOPE card exported as ${filename}`,
       });
     } catch (error) {
+      console.error("Download error:", error);
       toast({
         title: "Error",
-        description: "Failed to export DOPE card",
+        description: `Failed to export DOPE card: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     }
