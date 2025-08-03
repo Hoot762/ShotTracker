@@ -100,10 +100,24 @@ export default function DopePage() {
   const downloadDopeCard = async (card: DopeCard) => {
     try {
       console.log("Starting download for card:", card.id);
+      console.log("Card data:", card);
       
       // Fetch the range data for this card
-      const ranges: DopeRange[] = await apiRequest("GET", `/api/dope-cards/${card.id}/ranges`);
+      const response = await fetch(`/api/dope-cards/${card.id}/ranges`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
       
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ranges: ${response.status} ${response.statusText}`);
+      }
+      
+      const ranges: DopeRange[] = await response.json();
+      
+      console.log("Raw response:", response);
       console.log("Fetched ranges:", ranges);
       console.log("Number of ranges:", ranges?.length);
       console.log("Type of ranges:", typeof ranges);
