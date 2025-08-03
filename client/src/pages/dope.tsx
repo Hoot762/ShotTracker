@@ -147,41 +147,43 @@ export default function DopePage() {
         content += `${subtitle.padStart((60 + subtitle.length) / 2)}\n`;
         content += `${divider}\n\n`;
         content += `${minorDivider}\n`;
-        content += `| Distance | Windage | Elevation |\n`;
-        content += `|   (yds)  |  (MOA)  |   (MOA)   |\n`;
+        content += `| Distance | Elevation | Windage |\n`;
+        content += `|   (yds)  |   (MOA)   |  (MOA)  |\n`;
         content += `${minorDivider}\n`;
         
-        if (Array.isArray(ranges) && ranges.length > 0) {
-          // Sort ranges by distance
-          const sortedRanges = [...ranges].sort((a, b) => a.range - b.range);
-          console.log("Sorted ranges for export:", sortedRanges);
+        // Create a complete table with all standard ranges
+        const standardRanges = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200];
+        
+        // Create a map of saved ranges for quick lookup
+        const rangeMap = new Map();
+        if (Array.isArray(ranges)) {
+          ranges.forEach(range => {
+            rangeMap.set(range.range, range);
+          });
+        }
+        
+        console.log("Creating complete table with ranges:", standardRanges);
+        console.log("Available data for ranges:", rangeMap.keys());
+        
+        for (const rangeDistance of standardRanges) {
+          const savedRange = rangeMap.get(rangeDistance);
           
-          for (const range of sortedRanges) {
-            const distance = range.range.toString().padStart(6);
-            // Handle null/undefined values by showing blank spaces
-            const windage = range.windage !== null && range.windage !== undefined 
-              ? range.windage.toFixed(1).padStart(6)
-              : "".padStart(6);
-            const elevation = range.elevation !== null && range.elevation !== undefined 
-              ? range.elevation.toFixed(1).padStart(7)
-              : "".padStart(7);
-            
-            console.log(`Exporting range ${range.range}:`, {
-              distance,
-              windage: range.windage,
-              elevation: range.elevation,
-              windageFormatted: windage,
-              elevationFormatted: elevation
+          const distance = rangeDistance.toString().padEnd(8);
+          const elevation = savedRange?.elevation !== null && savedRange?.elevation !== undefined 
+            ? savedRange.elevation.toFixed(1).padEnd(9)
+            : "".padEnd(9);
+          const windage = savedRange?.windage !== null && savedRange?.windage !== undefined 
+            ? savedRange.windage.toFixed(1).padEnd(7)
+            : "".padEnd(7);
+          
+          if (savedRange) {
+            console.log(`Adding range ${rangeDistance} with data:`, {
+              elevation: savedRange.elevation,
+              windage: savedRange.windage
             });
-            
-            content += `|${distance}  |${windage}  |${elevation}  |\n`;
           }
-        } else {
-          console.log("No ranges to export");
-          // Empty table message
-          content += `|          |         |           |\n`;
-          content += `|    (No range data available)    |\n`;
-          content += `|          |         |           |\n`;
+          
+          content += `| ${distance} | ${elevation} | ${windage} |\n`;
         }
         
         content += `${minorDivider}\n\n`;
