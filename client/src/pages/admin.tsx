@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, UserCog, Users, ArrowLeft, Settings, LogOut, Shield, Sun, Moon } from "lucide-react";
+import { Plus, Trash2, UserCog, Users, ArrowLeft, Settings, LogOut, Shield } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
@@ -27,8 +27,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { useTheme } from "@/components/theme-provider";
-import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,7 +43,6 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
 
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -164,9 +161,9 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700">
+      <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -175,8 +172,8 @@ export default function Admin() {
                   <UserCog className="text-white" size={20} />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Admin Panel</h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">User Management</p>
+                  <h1 className="text-xl font-bold text-slate-900">Admin Panel</h1>
+                  <p className="text-xs text-slate-500">User Management</p>
                 </div>
               </Link>
             </div>
@@ -199,28 +196,10 @@ export default function Admin() {
                 <DropdownMenuContent align="end">
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user?.email}
-                    {user?.isAdmin && <span className="text-xs text-blue-600 dark:text-blue-400 block">Admin</span>}
+                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
-
                   <DropdownMenuSeparator />
-                  
-                  {/* Dark Mode Toggle */}
-                  <div className="px-2 py-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        {theme === "dark" ? <Moon size={14} /> : <Sun size={14} />}
-                        <span className="text-sm">Dark Mode</span>
-                      </div>
-                      <Switch 
-                        checked={theme === "dark"} 
-                        onCheckedChange={toggleTheme}
-                        aria-label="Toggle dark mode"
-                      />
-                    </div>
-                  </div>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="mr-2" size={14} />
                     Logout
                   </DropdownMenuItem>

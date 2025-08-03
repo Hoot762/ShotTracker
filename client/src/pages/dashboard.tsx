@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Target, TrendingUp, Trophy, LogOut, Settings, Plus, Sun, Moon } from "lucide-react";
+import { Target, TrendingUp, Trophy, LogOut, Settings, Plus } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth, useLogout } from "@/hooks/useAuth";
-import { useTheme } from "@/components/theme-provider";
 import SessionForm from "@/components/session-form";
 import SessionList from "@/components/session-list";
 import SessionFilters from "@/components/session-filters";
@@ -11,7 +10,6 @@ import SessionDetailModal from "@/components/session-detail-modal";
 import DeleteSessionDialog from "@/components/delete-session-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +36,6 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<FilterState>({});
   const { user } = useAuth();
   const { toast } = useToast();
-  const { theme, toggleTheme } = useTheme();
   const logoutMutation = useLogout();
 
   const { data: sessions, isLoading } = useQuery<Session[]>({
@@ -85,9 +82,9 @@ export default function Dashboard() {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+      <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity min-w-0 flex-shrink">
@@ -95,8 +92,8 @@ export default function Dashboard() {
                 <Target className="text-white" size={18} />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 truncate">ShotTracker Pro</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Precision Shooting Logger</p>
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">ShotTracker Pro</h1>
+                <p className="text-xs text-slate-500 hidden sm:block">Precision Shooting Logger</p>
               </div>
             </Link>
             
@@ -159,24 +156,7 @@ export default function Dashboard() {
                 <DropdownMenuContent align="end">
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user?.email}
-                    {user?.isAdmin && <span className="text-xs text-blue-600 dark:text-blue-400 block">Admin</span>}
-                  </div>
-
-                  <DropdownMenuSeparator />
-                  
-                  {/* Dark Mode Toggle */}
-                  <div className="px-2 py-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        {theme === "dark" ? <Moon size={14} /> : <Sun size={14} />}
-                        <span className="text-sm">Dark Mode</span>
-                      </div>
-                      <Switch 
-                        checked={theme === "dark"} 
-                        onCheckedChange={toggleTheme}
-                        aria-label="Toggle dark mode"
-                      />
-                    </div>
+                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
 
                   {user?.isAdmin && (
@@ -191,7 +171,7 @@ export default function Dashboard() {
                     </>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="mr-2" size={14} />
                     Logout
                   </DropdownMenuItem>
