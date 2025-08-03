@@ -17,18 +17,23 @@ export default function ScoringSection({ form }: ScoringSectionProps) {
   
   const { totalScore, vCount } = calculateScore(shots);
   
-  // Calculate adjusted score based on markers state
-  const getAdjustedScore = () => {
-    if (!markersRemoved) return totalScore;
+  // Calculate adjusted score and V-count based on markers state
+  const getAdjustedValues = () => {
+    if (!markersRemoved) return { score: totalScore, vCount: vCount };
     
-    // Subtract shot 1 and shot 2 from total score
+    // Calculate shot 1 and shot 2 values and V counts
     const shot1Value = shots[0] === 'V' ? 5 : (Number(shots[0]) || 0);
     const shot2Value = shots[1] === 'V' ? 5 : (Number(shots[1]) || 0);
+    const shot1IsV = shots[0] === 'V';
+    const shot2IsV = shots[1] === 'V';
     
-    return Math.max(0, totalScore - shot1Value - shot2Value);
+    const adjustedScore = Math.max(0, totalScore - shot1Value - shot2Value);
+    const adjustedVCount = vCount - (shot1IsV ? 1 : 0) - (shot2IsV ? 1 : 0);
+    
+    return { score: adjustedScore, vCount: Math.max(0, adjustedVCount) };
   };
   
-  const adjustedScore = getAdjustedScore();
+  const { score: adjustedScore, vCount: adjustedVCount } = getAdjustedValues();
   
   const handleToggleMarkers = () => {
     setMarkersRemoved(!markersRemoved);
@@ -87,7 +92,10 @@ export default function ScoringSection({ form }: ScoringSectionProps) {
           </div>
           <div>
             <p className="text-sm font-medium text-slate-600">V Count</p>
-            <p className="text-2xl font-bold text-violet-600">{vCount}</p>
+            <p className="text-2xl font-bold text-violet-600">{adjustedVCount}</p>
+            {markersRemoved && adjustedVCount !== vCount && (
+              <p className="text-xs text-orange-600">V's removed (-{vCount - adjustedVCount})</p>
+            )}
           </div>
         </div>
         <div className="text-right">
