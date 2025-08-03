@@ -71,8 +71,13 @@ export default function Dashboard() {
   const stats = sessions ? {
     total: sessions.length,
     average: sessions.length > 0 ? sessions.reduce((sum, s) => sum + s.totalScore, 0) / sessions.length : 0,
-    best: sessions.length > 0 ? Math.max(...sessions.map(s => s.totalScore)) : 0,
-  } : { total: 0, average: 0, best: 0 };
+    best: sessions.length > 0 ? (() => {
+      const bestSession = sessions.reduce((best, current) => 
+        current.totalScore > best.totalScore ? current : best
+      );
+      return `${bestSession.totalScore}.${bestSession.vCount}`;
+    })() : "0.0",
+  } : { total: 0, average: 0, best: "0.0" };
 
 
 
@@ -214,7 +219,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">Best Score</p>
-                    <p className="text-2xl font-bold text-violet-600">{stats.best.toFixed(1)}</p>
+                    <p className="text-2xl font-bold text-violet-600">{stats.best}</p>
                   </div>
                   <div className="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center">
                     <Trophy className="text-violet-600" size={24} />
