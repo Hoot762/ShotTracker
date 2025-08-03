@@ -164,24 +164,52 @@ export default function Admin() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <UserCog className="text-white" size={20} />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">Admin Panel</h1>
-                  <p className="text-xs text-slate-500">User Management</p>
-                </div>
-              </Link>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                <UserCog className="text-white" size={16} />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">Admin Panel</h1>
+                <p className="text-xs text-slate-500 hidden sm:block">User Management</p>
+              </div>
             </div>
             
-            <nav className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-1 sm:space-x-4">
+              {/* Mobile Menu */}
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="px-2">
+                      <Settings size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/" className="flex items-center">
+                        <ArrowLeft className="mr-2" size={14} />
+                        Back to Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <div className="px-2 py-1.5 text-sm font-medium">
+                      {user?.email}
+                      <span className="text-xs text-blue-600 block">Admin</span>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                      <LogOut className="mr-2" size={14} />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Desktop Navigation */}
               <Link 
                 href="/" 
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                className="hidden sm:flex items-center space-x-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
               >
                 <ArrowLeft size={16} />
                 <span>Back to Dashboard</span>
@@ -189,7 +217,7 @@ export default function Admin() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="px-2">
+                  <Button variant="ghost" size="sm" className="hidden sm:flex px-2">
                     <Settings size={16} />
                   </Button>
                 </DropdownMenuTrigger>
@@ -210,20 +238,20 @@ export default function Admin() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Add User Form */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                 <div>
-                  <CardTitle className="flex items-center">
-                    <Plus className="mr-2 text-primary" size={20} />
+                  <CardTitle className="flex items-center text-lg sm:text-xl">
+                    <Plus className="mr-2 text-primary" size={18} />
                     Add New User
                   </CardTitle>
-                  <CardDescription>Create user accounts and set their permissions</CardDescription>
+                  <CardDescription className="text-sm">Create user accounts and set their permissions</CardDescription>
                 </div>
-                <Button onClick={() => setShowForm(!showForm)}>
+                <Button onClick={() => setShowForm(!showForm)} size="sm" className="w-full sm:w-auto">
                   {showForm ? "Cancel" : "Add User"}
                 </Button>
               </div>
@@ -281,11 +309,11 @@ export default function Admin() {
                         </FormItem>
                       )}
                     />
-                    <div className="flex justify-end space-x-3">
-                      <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                    <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                      <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={createUserMutation.isPending}>
+                      <Button type="submit" disabled={createUserMutation.isPending} className="w-full sm:w-auto">
                         {createUserMutation.isPending ? "Creating..." : "Create User"}
                       </Button>
                     </div>
@@ -298,20 +326,21 @@ export default function Admin() {
           {/* Super Admin Section */}
           <Card className="border-orange-200 bg-orange-50/30">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                 <div>
-                  <CardTitle className="flex items-center text-orange-800">
-                    <Shield className="mr-2 text-orange-600" size={20} />
+                  <CardTitle className="flex items-center text-orange-800 text-lg sm:text-xl">
+                    <Shield className="mr-2 text-orange-600" size={18} />
                     Production Super Admin
                   </CardTitle>
-                  <CardDescription className="text-orange-700">
+                  <CardDescription className="text-orange-700 text-sm">
                     Set up super admin credentials for production deployment. These will be used when the app is deployed.
                   </CardDescription>
                 </div>
                 <Button 
                   onClick={() => setShowSuperAdminForm(!showSuperAdminForm)}
                   variant="outline"
-                  className="border-orange-300 text-orange-800 hover:bg-orange-100"
+                  size="sm"
+                  className="border-orange-300 text-orange-800 hover:bg-orange-100 w-full sm:w-auto"
                 >
                   {showSuperAdminForm ? "Cancel" : "Set Credentials"}
                 </Button>
@@ -358,19 +387,19 @@ export default function Admin() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-3">
+                  <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                     <Button 
                       type="button" 
                       variant="outline" 
                       onClick={() => setShowSuperAdminForm(false)}
-                      className="border-orange-300 text-orange-800 hover:bg-orange-100"
+                      className="border-orange-300 text-orange-800 hover:bg-orange-100 w-full sm:w-auto"
                     >
                       Cancel
                     </Button>
                     <Button 
                       type="submit" 
                       disabled={createSuperAdminMutation.isPending}
-                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                      className="bg-orange-600 hover:bg-orange-700 text-white w-full sm:w-auto"
                     >
                       {createSuperAdminMutation.isPending ? "Setting..." : "Set Super Admin"}
                     </Button>
@@ -383,40 +412,91 @@ export default function Admin() {
           {/* Users List */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="mr-2 text-primary" size={20} />
+              <CardTitle className="flex items-center text-lg sm:text-xl">
+                <Users className="mr-2 text-primary" size={18} />
                 Users ({users?.length || 0})
               </CardTitle>
-              <CardDescription>Manage user accounts and permissions</CardDescription>
+              <CardDescription className="text-sm">Manage user accounts and permissions</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <div className="text-center py-8">Loading users...</div>
               ) : users && users.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Created</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">{user.email}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.isAdmin ? "default" : "secondary"}>
+                                {user.isAdmin ? "Administrator" : "User"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                                    <Trash2 size={14} />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete {user.email}? This action cannot be undone
+                                      and will delete all of their shooting sessions.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteUserMutation.mutate(user.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Cards */}
+                  <div className="md:hidden space-y-3">
                     {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.isAdmin ? "default" : "secondary"}>
-                            {user.isAdmin ? "Administrator" : "User"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">
+                      <Card key={user.id} className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-slate-900 truncate">{user.email}</h3>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Badge variant={user.isAdmin ? "default" : "secondary"} className="text-xs">
+                                {user.isAdmin ? "Admin" : "User"}
+                              </Badge>
+                              <span className="text-xs text-slate-500">
+                                {new Date(user.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                                <Trash2 size={14} />
+                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 ml-2">
+                                <Trash2 size={16} />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -438,11 +518,11 @@ export default function Admin() {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                      </Card>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-8 text-slate-500">
                   No users found. Create the first user to get started.
