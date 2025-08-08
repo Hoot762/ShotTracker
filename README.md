@@ -4,7 +4,7 @@ A modern, precision shooting session tracking web application designed for compe
 
 ## 🎯 Overview
 
-ShotTracker Pro provides shooters with the tools to meticulously track their shooting sessions, analyze performance patterns, and maintain detailed records of their equipment and conditions. The application features multi-user support, advanced filtering, data export capabilities, and specialized DOPE (Data on Previous Engagements) card management for long-range shooting.
+ShotTracker Pro provides shooters with the tools to meticulously track their shooting sessions, analyze performance patterns, and maintain detailed records of their equipment and conditions. The application uses Supabase for authentication and database management, allowing users to record detailed information about their shooting sessions, including rifle specifications, environmental conditions, shot scoring, and photos. It provides comprehensive filtering and analysis capabilities to help shooters track their progress and identify patterns in their performance.
 
 ## ✨ Key Features
 
@@ -831,13 +831,132 @@ CREATE INDEX idx_sessions_user_date_rifle ON sessions(user_id, date, rifle);
 
 ## 🔄 Recent Updates
 
-### Latest Improvements (August 2025)
-- **Enhanced DOPE Export**: Complete range coverage with professional ASCII formatting
-- **Column Reordering**: Distance | Elevation | Windage format for better usability
-- **Zero Value Handling**: Proper display of 0.0 values in exports
-- **Mobile Responsiveness**: Improved touch controls and layout optimization
-- **Export Functionality**: Comprehensive CSV/PDF export with smart filtering
-- **Data Validation Fixes**: Resolved form validation issues for session creation
+### Latest Improvements (January 2025)
+- **Supabase Integration**: Complete migration from Express/PostgreSQL to Supabase
+- **Authentication**: Supabase Auth with email/password login
+- **Database**: PostgreSQL with Row Level Security (RLS) policies
+- **Real-time Updates**: Automatic data synchronization
+- **Simplified Architecture**: Removed server-side code, now fully client-side with Supabase
+- **Enhanced Security**: User data isolation through RLS policies
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React with TypeScript for type safety and modern development
+- **UI Components**: Shadcn/UI component library built on Radix UI primitives
+- **Styling**: Tailwind CSS with CSS variables for theming support
+- **Routing**: Wouter for lightweight client-side routing
+- **State Management**: TanStack React Query for server state management and caching
+- **Form Handling**: React Hook Form with Zod validation for type-safe form management
+- **Build Tool**: Vite for fast development and optimized production builds
+
+### Backend Architecture (Supabase)
+- **Database**: PostgreSQL with automatic scaling
+- **Authentication**: Supabase Auth with JWT tokens
+- **Authorization**: Row Level Security (RLS) policies for data isolation
+- **File Storage**: Supabase Storage for image uploads
+- **Real-time**: Automatic data synchronization across clients
+- **API**: Auto-generated REST and GraphQL APIs
+
+### Database Design
+- **Database**: PostgreSQL with Supabase
+- **Authentication**: Supabase Auth integration with user profiles
+- **Schema**: Multi-table design with `users`, `sessions`, `dope_cards`, and `dope_ranges` tables
+- **User Isolation**: All shooting sessions are isolated per user with proper access controls
+- **Admin System**: Role-based permissions with admin flag
+- **Security**: Row Level Security (RLS) policies ensure users can only access their own data
+- **Validation**: Zod schemas for client-side validation
+
+### Key Features
+- **User Authentication**: Supabase Auth with email/password login and admin roles
+- **User Management**: Admin panel for creating users and managing accounts
+- **Session Management**: Create, read, update, and delete shooting sessions (isolated per user)
+- **Shot Scoring**: 12-shot arrays with support for numeric scores and 'V' (bull's-eye) notation
+- **Photo Upload**: Image attachment with Supabase Storage
+- **Filtering System**: Multi-criteria filtering by name, date range, rifle, and distance
+- **Score Calculation**: Automatic total score and V-count calculation
+- **DOPE Card Management**: Digital scope setting cards with ASCII table export functionality
+- **Data Export System**: Comprehensive CSV/PDF export with smart filtering and professional formatting
+- **Role-Based Access**: Admin users can access user management features
+- **Responsive Design**: Mobile-first approach with adaptive layouts
+
+### Development Workflow
+- **Hot Reload**: Vite development server with HMR for rapid iteration
+- **Type Checking**: Comprehensive TypeScript configuration across client code
+- **Code Organization**: Clean client-side architecture with Supabase integration
+- **Error Handling**: Centralized error handling with user-friendly messages
+
+## External Dependencies
+
+### Core Framework Dependencies
+- **React Ecosystem**: React 18 with TypeScript, React DOM, and React Hook Form
+- **TanStack React Query**: Server state management and data fetching
+- **Wouter**: Lightweight routing library for single-page application navigation
+
+### UI and Styling
+- **Radix UI**: Comprehensive set of unstyled, accessible UI primitives
+- **Tailwind CSS**: Utility-first CSS framework with PostCSS processing
+- **Class Variance Authority**: Type-safe variant handling for component styling
+- **Lucide React**: Modern icon library with React components
+
+### Backend Services (Supabase)
+- **Supabase**: Backend-as-a-Service with PostgreSQL, Auth, and Storage
+- **Supabase JS**: JavaScript client library for Supabase integration
+
+### Validation
+- **Zod**: TypeScript-first schema validation library
+
+### Export and Reporting
+- **jsPDF**: PDF generation library for professional document export
+- **jsPDF-AutoTable**: Table generation plugin for structured PDF reports
+- **CSV Export**: Native JavaScript CSV generation with proper escaping
+
+### Development Tools
+- **Vite**: Build tool with development server and production bundling
+- **Replit Integration**: Development environment plugins and error handling
+
+## Setup Instructions
+
+1. **Clone the repository**
+2. **Install dependencies**: `npm install`
+3. **Set up Supabase**:
+   - Create a new Supabase project at [supabase.com](https://supabase.com)
+   - Copy your project URL and anon key
+   - Create a `.env` file based on `.env.example`
+   - Run the migration in the Supabase SQL editor
+4. **Configure Storage**:
+   - Create a storage bucket named `session-photos`
+   - Set appropriate policies for authenticated users
+5. **Start development**: `npm run dev`
+
+## Environment Variables
+
+Create a `.env` file with:
+
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Database Setup
+
+Run the provided SQL migration in your Supabase project to set up:
+- User profiles table
+- Sessions table with RLS policies
+- DOPE cards and ranges tables
+- Authentication triggers
+- Super admin user creation
+
+## Storage Setup
+
+Create a storage bucket named `session-photos` with policies allowing:
+- Authenticated users to upload files
+- Users to read their own uploaded files
+- Public read access for session photos
 
 ## 🤝 Contributing
 
