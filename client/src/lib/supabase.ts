@@ -3,29 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Check if environment variables are properly configured
-if (!supabaseUrl || !supabaseAnonKey || 
-    supabaseUrl === 'your_supabase_project_url_here' || 
-    supabaseAnonKey === 'your_supabase_anon_key_here') {
-  console.error('❌ Supabase environment variables are not configured properly!');
-  console.error('📝 Please update your .env file with your actual Supabase credentials:');
-  console.error('   1. Go to https://supabase.com/dashboard');
-  console.error('   2. Select your project');
-  console.error('   3. Go to Settings > API');
-  console.error('   4. Copy your Project URL and anon/public key');
-  console.error('   5. Update the .env file in your project root');
-  console.error('   6. Restart the development server');
-}
+// Create the Supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Export a flag to check if we're in demo mode
-export const isDemoMode = !supabaseUrl || !supabaseAnonKey || 
-  supabaseUrl === 'your_supabase_project_url_here' || 
-  supabaseAnonKey === 'your_supabase_anon_key_here';
-
-// Only create client if we have valid credentials
-export const supabase = isDemoMode 
-  ? null 
-  : createClient(supabaseUrl, supabaseAnonKey);
+// Export a flag to check if we're in demo mode (for backwards compatibility)
+export const isDemoMode = false;
 
 export type Database = {
   public: {
