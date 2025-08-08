@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "start": "vite preview",
-    "check": "tsc",
+    "check": "tsc"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
