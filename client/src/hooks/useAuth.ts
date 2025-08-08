@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase, isDemoMode } from "@/lib/supabase";
 import type { User as AuthUser } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase";
 
@@ -16,6 +16,20 @@ type LoginUser = {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Check if Supabase is properly configured
+  if (isDemoMode || !supabase) {
+    return {
+      user: null,
+      profile: null,
+      isLoading: false,
+      signIn: () => Promise.reject(new Error('Supabase not configured')),
+      signUp: () => Promise.reject(new Error('Supabase not configured')),
+      signOut: () => Promise.reject(new Error('Supabase not configured')),
+      isSigningIn: false,
+      isSigningUp: false,
+    };
+  }
 
   useEffect(() => {
     // Get initial session
