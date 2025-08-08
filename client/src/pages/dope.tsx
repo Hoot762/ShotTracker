@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { getCurrentUserId } from "@/lib/queryClient";
 import { Plus, Target, Edit2, Trash2, Settings, LogOut, ArrowLeft, Download } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,15 +26,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest } from "@/lib/queryClient";
-import type { DopeCard, DopeRange } from "@shared/schema";
+import type { Database } from "@/lib/supabase";
 import DopeCardForm from "@/components/dope-card-form";
 import DopeCardDetail from "@/components/dope-card-detail";
+
+type DopeCard = Database['public']['Tables']['dope_cards']['Row'];
+type DopeRange = Database['public']['Tables']['dope_ranges']['Row'];
 
 const useLogout = () => {
   const { toast } = useToast();
   return useMutation({
-    mutationFn: () => apiRequest("POST", "/api/auth/logout"),
+    mutationFn: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
     onSuccess: () => {
       window.location.href = "/";
     },
@@ -55,16 +62,34 @@ export default function DopePage() {
   const logoutMutation = useLogout();
 
   const { data: dopeCards, isLoading } = useQuery<DopeCard[]>({
-    queryKey: ["/api/dope-cards"],
-    enabled: true,
+    queryKey: ['dope-cards'],
+    queryFn: async () => {
+      const userId = await getCurrentUserId();
+      const { data, error } = await supabase
+        .from('dope_cards')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
   });
 
   const queryClient = useQueryClient();
   
   const deleteCardMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("DELETE", `/api/dope-cards/${id}`),
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('dope_cards')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/dope-cards"] });
+      queryClient.invalidateQueries({ queryKey: ['dope-cards'] });
       toast({
         title: "Success",
         description: "DOPE card deleted successfully",
@@ -103,26 +128,19 @@ export default function DopePage() {
       console.log("Card data:", card);
       
       // Fetch the range data for this card
-      const response = await fetch(`/api/dope-cards/${card.id}/ranges`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
+      const { data: ranges, error } = await supabase
+        .from('dope_ranges')
+        .select('*')
+        .eq('dope_card_id', card.id)
+        .order('range', { ascending: true });
+        
+      if (error) throw error;
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ranges: ${response.status} ${response.statusText}`);
-      }
-      
-      const ranges: DopeRange[] = await response.json();
-      
-      console.log("Raw response:", response);
       console.log("Fetched ranges:", ranges);
       console.log("Number of ranges:", ranges?.length);
       console.log("Type of ranges:", typeof ranges);
       
-      if (Array.isArray(ranges)) {
+      if (Array.isArray(ranges) && ranges.length > 0) {
         ranges.forEach((range, index) => {
           console.log(`Range ${index}:`, {
             range: range.range,
@@ -156,7 +174,7 @@ export default function DopePage() {
         
         // Create a map of saved ranges for quick lookup
         const rangeMap = new Map();
-        if (Array.isArray(ranges)) {
+        if (Array.isArray(ranges) && ranges.length > 0) {
           ranges.forEach(range => {
             rangeMap.set(range.range, range);
           });
@@ -193,7 +211,7 @@ export default function DopePage() {
         return content;
       };
       
-      const content = generateAsciiTable(card, ranges);
+      const content = generateAsciiTable(card, ranges || []);
       const filename = `DOPE_${card.rifle.replace(/\s+/g, '_')}_${card.calibre.replace(/\s+/g, '_')}.txt`;
       
       // Create and download the file
@@ -260,10 +278,10 @@ export default function DopePage() {
                 <DropdownMenuContent align="end">
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user?.email}
-                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
+                    {user?.is_admin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
 
-                  {user?.isAdmin && (
+                  {user?.is_admin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>

@@ -1,14 +1,23 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { getCurrentUserId } from "@/lib/queryClient";
 import { ChevronDown, Plus, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { insertDopeCardSchema, type InsertDopeCard } from "@shared/schema";
+import { z } from "zod";
+
+const insertDopeCardSchema = z.object({
+  name: z.string().min(1, "DOPE card name is required"),
+  rifle: z.string().min(1, "Rifle is required"),
+  calibre: z.string().min(1, "Calibre is required"),
+});
+
+type InsertDopeCard = z.infer<typeof insertDopeCardSchema>;
 
 interface DopeCardFormProps {
   isOpen: boolean;
@@ -30,10 +39,21 @@ export default function DopeCardForm({ isOpen, onToggle }: DopeCardFormProps) {
 
   const createCardMutation = useMutation({
     mutationFn: async (data: InsertDopeCard) => {
-      return apiRequest('POST', '/api/dope-cards', data);
+      const userId = await getCurrentUserId();
+      const { data: result, error } = await supabase
+        .from('dope_cards')
+        .insert({
+          ...data,
+          user_id: userId,
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/dope-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['dope-cards'] });
       toast({
         title: "Success",
         description: "DOPE card created successfully",

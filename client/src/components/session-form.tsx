@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { getCurrentUserId } from "@/lib/queryClient";
 import { ChevronDown, Plus, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,15 +12,52 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { insertSessionSchema, type InsertSession, type Session } from "@shared/schema";
+import { z } from "zod";
 import ScoringSection from "@/components/scoring-section";
 import PhotoUpload from "@/components/photo-upload";
+import type { Database } from "@/lib/supabase";
+
+type Session = Database['public']['Tables']['sessions']['Row'];
+
+const insertSessionSchema = z.object({
+  name: z.string().min(1, "Session name is required"),
+  date: z.string().min(1, "Date is required"),
+  rifle: z.string().min(1, "Rifle is required"),
+  calibre: z.string().min(1, "Calibre is required"),
+  bullet_weight: z.number().min(1, "Bullet weight must be at least 1 grain"),
+  distance: z.number().min(1, "Distance must be at least 1 yard"),
+  elevation: z.number().nullable().optional(),
+  windage: z.number().nullable().optional(),
+  shots: z.array(z.union([z.string(), z.number()])).length(12),
+  notes: z.string().nullable().optional(),
+  photo_url: z.string().nullable().optional(),
+});
+
+type InsertSession = z.infer<typeof insertSessionSchema>;
 
 interface SessionFormProps {
   isOpen: boolean;
   onToggle: () => void;
   editSession?: Session | null;
+}
+
+// Calculate score from shots array
+function calculateScore(shots: (string | number)[]): { totalScore: number; vCount: number } {
+  let totalScore = 0;
+  let vCount = 0;
+  
+  for (const shot of shots) {
+    if (shot === 'V' || shot === 'v') {
+      totalScore += 5;
+      vCount += 1;
+    } else if (typeof shot === 'number') {
+      totalScore += shot;
+    } else if (typeof shot === 'string' && !isNaN(Number(shot))) {
+      totalScore += Number(shot);
+    }
+  }
+  
+  return { totalScore, vCount };
 }
 
 export default function SessionForm({ isOpen, onToggle, editSession }: SessionFormProps) {
@@ -35,7 +74,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
       date: new Date().toISOString().split('T')[0],
       rifle: "",
       calibre: "",
-      bulletWeight: 0,
+      bullet_weight: 0,
       distance: 100,
       elevation: null,
       windage: null,
@@ -55,7 +94,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         date: editSession.date,
         rifle: editSession.rifle,
         calibre: editSession.calibre,
-        bulletWeight: editSession.bulletWeight,
+        bullet_weight: editSession.bullet_weight,
         distance: editSession.distance,
         elevation: editSession.elevation,
         windage: editSession.windage,
@@ -68,7 +107,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
         date: new Date().toISOString().split('T')[0],
         rifle: "",
         calibre: "",
-        bulletWeight: 0,
+        bullet_weight: 0,
         distance: 100,
         elevation: null,
         windage: null,
@@ -80,36 +119,71 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
 
   const sessionMutation = useMutation({
     mutationFn: async (data: InsertSession) => {
-      // Transform the data to ensure proper types
-      const transformedData = {
-        ...data,
-        bulletWeight: Number(data.bulletWeight) || 168,
+      const userId = await getCurrentUserId();
+      const { totalScore, vCount } = calculateScore(data.shots);
+      
+      let photoUrl = null;
+      
+      // Handle photo upload
+      if (photoFile) {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('session-photos')
+          .upload(fileName, photoFile);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('session-photos')
+          .getPublicUrl(fileName);
+          
+        photoUrl = publicUrl;
+      } else if (isEditing && !deleteExistingPhoto) {
+        photoUrl = editSession?.photo_url;
+      }
+      
+      const sessionData = {
+        user_id: userId,
+        name: data.name,
+        date: data.date,
+        rifle: data.rifle,
+        calibre: data.calibre,
+        bullet_weight: Number(data.bullet_weight) || 168,
         distance: Number(data.distance) || 100,
         elevation: data.elevation !== null && data.elevation !== undefined ? Number(data.elevation) : null,
         windage: data.windage !== null && data.windage !== undefined ? Number(data.windage) : null,
+        shots: data.shots.map(shot => shot.toString()),
+        total_score: totalScore,
+        v_count: vCount,
+        photo_url: photoUrl,
         notes: data.notes || null,
       };
-
-      // Handle photo deletion in edit mode
-      if (isEditing && deleteExistingPhoto && !photoFile) {
-        transformedData.photoUrl = null;
-      }
-
-      if (photoFile) {
-        const formData = new FormData();
-        formData.append('sessionData', JSON.stringify(transformedData));
-        formData.append('photo', photoFile);
-        const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing ? `/api/sessions/${editSession.id}` : '/api/sessions';
-        return apiRequest(method, url, formData);
+      
+      if (isEditing) {
+        const { data: result, error } = await supabase
+          .from('sessions')
+          .update(sessionData)
+          .eq('id', editSession.id)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        return result;
       } else {
-        const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing ? `/api/sessions/${editSession.id}` : '/api/sessions';
-        return apiRequest(method, url, transformedData);
+        const { data: result, error } = await supabase
+          .from('sessions')
+          .insert(sessionData)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        return result;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast({
         title: "Success",
         description: isEditing ? "Session updated successfully" : "Session created successfully",
@@ -221,7 +295,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
                 />
                 <FormField
                   control={form.control}
-                  name="bulletWeight"
+                  name="bullet_weight"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Bullet Weight (gr) *</FormLabel>
@@ -321,7 +395,7 @@ export default function SessionForm({ isOpen, onToggle, editSession }: SessionFo
               {/* Photo Upload */}
               <PhotoUpload 
                 onFileSelect={setPhotoFile} 
-                existingPhotoUrl={editSession?.photoUrl}
+                existingPhotoUrl={editSession?.photo_url}
                 onDeletePhoto={() => setDeleteExistingPhoto(true)}
               />
 

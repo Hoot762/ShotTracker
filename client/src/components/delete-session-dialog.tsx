@@ -9,9 +9,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Session } from "@shared/schema";
+import type { Database } from "@/lib/supabase";
+
+type Session = Database['public']['Tables']['sessions']['Row'];
 
 interface DeleteSessionDialogProps {
   session: Session | null;
@@ -23,10 +26,15 @@ export default function DeleteSessionDialog({ session, onClose }: DeleteSessionD
 
   const deleteSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      await apiRequest('DELETE', `/api/sessions/${sessionId}`);
+      const { error } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', sessionId);
+        
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast({
         title: "Success",
         description: "Session deleted successfully",

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { getCurrentUserId } from "@/lib/queryClient";
 import { Target, TrendingUp, Trophy, LogOut, Settings, Plus, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth, useLogout } from "@/hooks/useAuth";
@@ -19,7 +21,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { exportFilteredSessions } from "@/lib/exportUtils";
-import type { Session } from "@shared/schema";
+import type { Database } from "@/lib/supabase";
+
+type Session = Database['public']['Tables']['sessions']['Row'];
 
 interface FilterState {
   name?: string;
@@ -40,22 +44,38 @@ export default function Dashboard() {
   const logoutMutation = useLogout();
 
   const { data: sessions, isLoading } = useQuery<Session[]>({
-    queryKey: ['/api/sessions', filters],
+    queryKey: ['sessions', filters],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== '') {
-          params.append(key, value.toString());
-        }
-      });
-      const url = `/api/sessions${params.toString() ? '?' + params.toString() : ''}`;
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) {
-        throw new Error(`${res.status}: ${await res.text()}`);
+      const userId = await getCurrentUserId();
+      
+      let query = supabase
+        .from('sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      // Apply filters
+      if (filters.name) {
+        query = query.ilike('name', `%${filters.name}%`);
       }
-      return res.json();
+      if (filters.rifle) {
+        query = query.ilike('rifle', `%${filters.rifle}%`);
+      }
+      if (filters.distance) {
+        query = query.eq('distance', filters.distance);
+      }
+      if (filters.dateFrom) {
+        query = query.gte('date', filters.dateFrom);
+      }
+      if (filters.dateTo) {
+        query = query.lte('date', filters.dateTo);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
     },
-    enabled: true,
+    enabled: !!user,
   });
 
   const handleLogout = () => {
@@ -97,12 +117,12 @@ export default function Dashboard() {
 
   const stats = sessions ? {
     total: sessions.length,
-    average: sessions.length > 0 ? sessions.reduce((sum, s) => sum + s.totalScore, 0) / sessions.length : 0,
+    average: sessions.length > 0 ? sessions.reduce((sum, s) => sum + s.total_score, 0) / sessions.length : 0,
     best: sessions.length > 0 ? (() => {
       const bestSession = sessions.reduce((best, current) => 
-        current.totalScore > best.totalScore ? current : best
+        current.total_score > best.total_score ? current : best
       );
-      return `${bestSession.totalScore}.${bestSession.vCount}`;
+      return `${bestSession.total_score}.${bestSession.v_count}`;
     })() : "0.0",
   } : { total: 0, average: 0, best: "0.0" };
 
@@ -212,10 +232,10 @@ export default function Dashboard() {
                 <DropdownMenuContent align="end">
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user?.email}
-                    {user?.isAdmin && <span className="text-xs text-blue-600 block">Admin</span>}
+                    {user?.is_admin && <span className="text-xs text-blue-600 block">Admin</span>}
                   </div>
 
-                  {user?.isAdmin && (
+                  {user?.is_admin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>

@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { Plus, Edit2, Trash2, Save, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import type { DopeCard, DopeRange, InsertDopeRange } from "@shared/schema";
+import type { Database } from "@/lib/supabase";
+
+type DopeCard = Database['public']['Tables']['dope_cards']['Row'];
+type DopeRange = Database['public']['Tables']['dope_ranges']['Row'];
+type InsertDopeRange = Database['public']['Tables']['dope_ranges']['Insert'];
 
 interface DopeCardDetailProps {
   card: DopeCard;
@@ -29,21 +33,36 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
   const queryClient = useQueryClient();
 
   const { data: ranges, isLoading } = useQuery<DopeRange[]>({
-    queryKey: [`/api/dope-cards/${card.id}/ranges`],
+    queryKey: ['dope-ranges', card.id],
     queryFn: async () => {
-      const res = await fetch(`/api/dope-cards/${card.id}/ranges`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch ranges');
-      return res.json();
+      const { data, error } = await supabase
+        .from('dope_ranges')
+        .select('*')
+        .eq('dope_card_id', card.id)
+        .order('range', { ascending: true });
+        
+      if (error) throw error;
+      return data || [];
     },
     enabled: true,
   });
 
   const createRangeMutation = useMutation({
-    mutationFn: async (data: InsertDopeRange) => {
-      return apiRequest('POST', `/api/dope-cards/${card.id}/ranges`, data);
+    mutationFn: async (data: Omit<InsertDopeRange, 'dope_card_id'>) => {
+      const { data: result, error } = await supabase
+        .from('dope_ranges')
+        .insert({
+          ...data,
+          dope_card_id: card.id,
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/dope-cards/${card.id}/ranges`] });
+      queryClient.invalidateQueries({ queryKey: ['dope-ranges', card.id] });
       setEditingRange(null);
       toast({
         title: "Success",
@@ -60,11 +79,19 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
   });
 
   const updateRangeMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertDopeRange> }) => {
-      return apiRequest('PUT', `/api/dope-ranges/${id}`, data);
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<InsertDopeRange, 'dope_card_id'>> }) => {
+      const { data: result, error } = await supabase
+        .from('dope_ranges')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/dope-cards/${card.id}/ranges`] });
+      queryClient.invalidateQueries({ queryKey: ['dope-ranges', card.id] });
       setEditingRange(null);
       toast({
         title: "Success",
@@ -82,10 +109,15 @@ export default function DopeCardDetail({ card, onClose }: DopeCardDetailProps) {
 
   const deleteRangeMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest('DELETE', `/api/dope-ranges/${id}`);
+      const { error } = await supabase
+        .from('dope_ranges')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/dope-cards/${card.id}/ranges`] });
+      queryClient.invalidateQueries({ queryKey: ['dope-ranges', card.id] });
       toast({
         title: "Success",
         description: "Range data deleted successfully",

@@ -1,13 +1,20 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLogin } from "@/hooks/useAuth";
-import { loginSchema, type LoginUser } from "@shared/schema";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Target } from "lucide-react";
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+type LoginUser = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const { toast } = useToast();
@@ -26,7 +33,7 @@ export default function Login() {
       onError: (error) => {
         toast({
           title: "Login Failed",
-          description: error.message || "Invalid credentials",
+          description: error?.message || "Invalid credentials",
           variant: "destructive",
         });
       },

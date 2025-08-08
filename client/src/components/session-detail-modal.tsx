@@ -1,7 +1,9 @@
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import type { Session } from "@shared/schema";
+import type { Database } from "@/lib/supabase";
+
+type Session = Database['public']['Tables']['sessions']['Row'];
 
 interface SessionDetailModalProps {
   session: Session;
@@ -38,7 +40,7 @@ export default function SessionDetailModal({ session, onClose }: SessionDetailMo
               </div>
               <div>
                 <p className="text-slate-500">Bullet Weight</p>
-                <p className="font-medium">{session.bulletWeight} gr</p>
+                <p className="font-medium">{session.bullet_weight} gr</p>
               </div>
               <div>
                 <p className="text-slate-500">Distance</p>
@@ -73,24 +75,24 @@ export default function SessionDetailModal({ session, onClose }: SessionDetailMo
               <div className="flex space-x-6">
                 <div>
                   <p className="text-sm font-medium text-slate-600">Total Score</p>
-                  <p className="text-2xl font-bold text-slate-900">{session.totalScore}</p>
+                  <p className="text-2xl font-bold text-slate-900">{session.total_score}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-600">V Count</p>
-                  <p className="text-2xl font-bold text-violet-600">{session.vCount}</p>
+                  <p className="text-2xl font-bold text-violet-600">{session.v_count}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Photo */}
-          {session.photoUrl && (
+          {session.photo_url && (
             <>
               <Separator />
               <div>
                 <h3 className="text-lg font-semibold mb-3">Target Photo</h3>
                 <img
-                  src={session.photoUrl}
+                  src={session.photo_url}
                   alt="Target photo"
                   className="max-w-full h-auto rounded-lg border"
                 />

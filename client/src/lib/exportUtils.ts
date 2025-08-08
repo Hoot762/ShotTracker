@@ -1,6 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { Session } from '@shared/schema';
+import type { Database } from '@/lib/supabase';
+
+type Session = Database['public']['Tables']['sessions']['Row'];
 
 // CSV Export Functions
 export function exportToCSV(sessions: Session[], filename: string = 'shooting_sessions') {
@@ -27,12 +29,12 @@ export function exportToCSV(sessions: Session[], filename: string = 'shooting_se
     session.name || '',
     session.rifle || '',
     session.calibre || '',
-    session.bulletWeight?.toString() || '',
+    session.bullet_weight?.toString() || '',
     session.distance?.toString() || '',
     session.elevation?.toString() || '',
     session.windage?.toString() || '',
-    session.totalScore?.toString() || '',
-    session.vCount?.toString() || '',
+    session.total_score?.toString() || '',
+    session.v_count?.toString() || '',
     ...(session.shots || Array(12).fill('')).map((shot: any) => shot?.toString() || ''),
     session.notes || ''
   ]);
@@ -85,8 +87,8 @@ export function exportToPDF(sessions: Session[], filename: string = 'shooting_se
     session.rifle || '',
     session.calibre || '',
     `${session.distance || ''} yds`,
-    session.totalScore?.toString() || '',
-    session.vCount?.toString() || ''
+    session.total_score?.toString() || '',
+    session.v_count?.toString() || ''
   ]);
 
   // Generate table
@@ -132,9 +134,9 @@ export function exportToPDF(sessions: Session[], filename: string = 'shooting_se
       const details = [
         `Date: ${new Date(session.date).toLocaleDateString()}`,
         `Rifle: ${session.rifle || 'N/A'} | Calibre: ${session.calibre || 'N/A'}`,
-        `Bullet Weight: ${session.bulletWeight || 'N/A'} gr | Distance: ${session.distance || 'N/A'} yards`,
+        `Bullet Weight: ${session.bullet_weight || 'N/A'} gr | Distance: ${session.distance || 'N/A'} yards`,
         `Elevation: ${session.elevation || 'N/A'} MOA | Windage: ${session.windage || 'N/A'} MOA`,
-        `Total Score: ${session.totalScore || 0} | V Count: ${session.vCount || 0}`
+        `Total Score: ${session.total_score || 0} | V Count: ${session.v_count || 0}`
       ];
 
       details.forEach(detail => {

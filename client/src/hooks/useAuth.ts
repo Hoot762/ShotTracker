@@ -1,19 +1,69 @@
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import type { User, LoginUser } from "@shared/schema";
+import { supabase } from "@/lib/supabase";
+import type { User as AuthUser } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase";
+
+type User = Database['public']['Tables']['users']['Row'] & {
+  auth_user?: AuthUser;
+};
+
+type LoginUser = {
+  email: string;
+  password: string;
+};
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery<User>({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setUser(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     user,
     isLoading,
     isAuthenticated: !!user,
     isAdmin: user?.isAdmin || false,
-    error,
   };
 }
 
@@ -21,12 +71,18 @@ export function useLogin() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (credentials: LoginUser) => {
-      return apiRequest('POST', '/api/auth/login', credentials);
+    mutationFn: async ({ email, password }: LoginUser) => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      return data;
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(['/api/auth/me'], user);
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['dope-cards'] });
     },
   });
 }
@@ -36,10 +92,10 @@ export function useLogout() {
   
   return useMutation({
     mutationFn: async () => {
-      return apiRequest('POST', '/api/auth/logout');
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.setQueryData(['/api/auth/me'], null);
       queryClient.clear();
     },
   });

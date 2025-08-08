@@ -2,7 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Grid, List, Edit, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Session } from "@shared/schema";
+import type { Database } from "@/lib/supabase";
+
+type Session = Database['public']['Tables']['sessions']['Row'];
 
 interface SessionListProps {
   sessions: Session[];
@@ -73,12 +75,12 @@ export default function SessionList({ sessions, isLoading, onSessionSelect, onSe
                         <h4 className="text-lg font-semibold text-slate-900 truncate pr-2">{session.name}</h4>
                         <div className="flex items-center space-x-2 flex-shrink-0">
                           <div className="text-right">
-                            <div className="text-xl font-bold text-slate-900">{session.totalScore}</div>
-                            <div className="text-xs text-slate-500">{session.vCount} V's</div>
+                            <div className="text-xl font-bold text-slate-900">{session.total_score}</div>
+                            <div className="text-xs text-slate-500">{session.v_count} V's</div>
                           </div>
-                          {session.photoUrl && (
+                          {session.photo_url && (
                             <img
-                              src={session.photoUrl}
+                              src={session.photo_url}
                               alt="Target photo"
                               className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                             />
@@ -168,18 +170,18 @@ export default function SessionList({ sessions, isLoading, onSessionSelect, onSe
                         </div>
                       </div>
                       <div className="flex items-center space-x-4 ml-6">
-                        {session.photoUrl && (
+                        {session.photo_url && (
                           <img
-                            src={session.photoUrl}
+                            src={session.photo_url}
                             alt="Target photo"
                             className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                           />
                         )}
                         <div className="text-right">
                           <div className="text-2xl font-bold text-slate-900">
-                            {session.totalScore}
+                            {session.total_score}
                           </div>
-                          <div className="text-sm text-slate-500">{session.vCount} V's</div>
+                          <div className="text-sm text-slate-500">{session.v_count} V's</div>
                         </div>
                         <div className="flex flex-col space-y-2">
                           <Button
