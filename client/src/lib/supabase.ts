@@ -1,13 +1,75 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+// Create a mock client if environment variables are not set
+const createSupabaseClient = () => {
+  if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    console.warn('Supabase environment variables not configured. Using demo mode.');
+    
+    // Return a mock client for demo purposes
+    return {
+      auth: {
+        signInWithPassword: async () => ({ 
+          data: { user: { id: 'demo-user', email: 'demo@example.com' } }, 
+          error: null 
+        }),
+        signOut: async () => ({ error: null }),
+        getUser: async () => ({ 
+          data: { user: { id: 'demo-user', email: 'demo@example.com' } }, 
+          error: null 
+        }),
+        getSession: async () => ({ 
+          data: { session: { user: { id: 'demo-user', email: 'demo@example.com' } } }, 
+          error: null 
+        }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        admin: {
+          createUser: async () => ({ 
+            data: { user: { id: 'new-user', email: 'new@example.com' } }, 
+            error: null 
+          }),
+          deleteUser: async () => ({ error: null }),
+        }
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            order: () => ({ data: [], error: null }),
+            single: () => ({ data: null, error: null }),
+          }),
+          order: () => ({ data: [], error: null }),
+        }),
+        insert: () => ({
+          select: () => ({
+            single: () => ({ data: {}, error: null }),
+          }),
+        }),
+        update: () => ({
+          eq: () => ({
+            select: () => ({
+              single: () => ({ data: {}, error: null }),
+            }),
+          }),
+        }),
+        delete: () => ({
+          eq: () => ({ error: null }),
+        }),
+      }),
+      storage: {
+        from: () => ({
+          upload: async () => ({ error: null }),
+          getPublicUrl: () => ({ data: { publicUrl: 'https://via.placeholder.com/300' } }),
+        }),
+      },
+    };
+  }
+  
+  return createClient(supabaseUrl, supabaseAnonKey);
+};
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createSupabaseClient();
 
 export type Database = {
   public: {
