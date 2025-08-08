@@ -89,15 +89,20 @@ export default function Admin() {
       
       if (authError) throw authError;
       
-      // Update user profile in our users table
-      const { error: profileError } = await supabase
+      // Create user profile in our users table
+      const { data: profileData, error: profileError } = await supabase
         .from('users')
-        .update({ is_admin: userData.isAdmin })
-        .eq('id', authData.user.id);
+        .insert({
+          id: authData.user.id,
+          email: userData.email,
+          is_admin: userData.isAdmin
+        })
+        .select()
+        .single();
       
       if (profileError) throw profileError;
       
-      return authData.user;
+      return profileData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });

@@ -50,7 +50,31 @@ export function useAuth() {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        // If user doesn't exist in users table, create them
+        if (error.code === 'PGRST116') {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: newUser, error: insertError } = await supabase
+              .from('users')
+              .insert({
+                id: user.id,
+                email: user.email || '',
+                is_admin: false
+              })
+              .select()
+              .single();
+            
+            if (insertError) {
+              console.error('Error creating user profile:', insertError);
+              return;
+            }
+            setUser(newUser);
+          }
+        }
+        return;
+      }
       setUser(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
