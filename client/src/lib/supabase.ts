@@ -3,20 +3,30 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Check if environment variables are properly configured and provide fallbacks
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase environment variables are not configured. Using demo mode.');
-  console.warn('To use real Supabase, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.');
+// Check if environment variables are properly configured
+if (!supabaseUrl || !supabaseAnonKey || 
+    supabaseUrl === 'your_supabase_project_url_here' || 
+    supabaseAnonKey === 'your_supabase_anon_key_here') {
+  console.error('❌ Supabase environment variables are not configured properly!');
+  console.error('📝 Please update your .env file with your actual Supabase credentials:');
+  console.error('   1. Go to https://supabase.com/dashboard');
+  console.error('   2. Select your project');
+  console.error('   3. Go to Settings > API');
+  console.error('   4. Copy your Project URL and anon/public key');
+  console.error('   5. Update the .env file in your project root');
+  console.error('   6. Restart the development server');
 }
 
-// Use fallback values if environment variables are not set
-const finalUrl = supabaseUrl || 'https://demo.supabase.co';
-const finalKey = supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-
-export const supabase = createClient(finalUrl, finalKey);
-
 // Export a flag to check if we're in demo mode
-export const isDemoMode = !supabaseUrl || !supabaseAnonKey;
+export const isDemoMode = !supabaseUrl || !supabaseAnonKey || 
+  supabaseUrl === 'your_supabase_project_url_here' || 
+  supabaseAnonKey === 'your_supabase_anon_key_here';
+
+// Only create client if we have valid credentials
+export const supabase = isDemoMode 
+  ? null 
+  : createClient(supabaseUrl, supabaseAnonKey);
+
 export type Database = {
   public: {
     Tables: {
